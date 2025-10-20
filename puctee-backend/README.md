@@ -11,51 +11,53 @@ Puctee Backend is a comprehensive social planning API that helps friends coordin
 ## 🛠️ Tech Stack
 
 - **Framework**: FastAPI (Python 3.11+)
-- **Database**: PostgreSQL with SQLAlchemy (Async ORM)
+- **Database**: PostgreSQL (Neon/Supabase) with SQLAlchemy (Async ORM)
 - **Authentication**: JWT tokens with bcrypt password hashing
 - **Notifications**: Apple Push Notification service (APNs)
-- **Server**: Uvicorn (ASGI)
+- **Server**: Cloudflare Workers (Serverless)
+- **Cache**: Redis (Upstash)
+- **Storage**: AWS S3 (can migrate to Cloudflare R2)
 - **Testing**: pytest with FastAPI TestClient
 - **Documentation**: Auto-generated OpenAPI/Swagger docs
 
 ## 🏗️ Architecture
 
-The Puctee backend follows a modern serverless architecture using AWS services and FastAPI.
+The Puctee backend follows a modern serverless architecture using Cloudflare Workers and Neon/Supabase.
 
 ```mermaid
 flowchart LR
     user["iOS App (SwiftUI)"]
     
-    subgraph AWS ["AWS"]
-        APIG["API Gateway (HTTP API)"]
-        
-        subgraph VPC ["VPC"]
-            L["Lambda (FastAPI)"]
-            RDS["PostgreSQL"]
-        end
-        
-        S3["S3 Bucket (object storage)"]
-        SM["Secrets Manager (credentials)"]
-        CW["CloudWatch Logs & Metrics"]
+    subgraph Cloudflare ["Cloudflare"]
+        Workers["Workers (FastAPI)"]
+        Secrets["Workers Secrets"]
+    end
+    
+    subgraph Database ["Database"]
+        Neon["Neon/Supabase PostgreSQL"]
+    end
+    
+    subgraph Cache ["Cache"]
+        Redis["Upstash Redis"]
+    end
+    
+    subgraph Storage ["Storage"]
+        S3["AWS S3"]
     end
 
-    APNs["Apple Push Notification Service (APNs)"]
+    APNs["Apple Push Notification Service"]
 
     %% Request flow
-    user -- "HTTPS / JSON" --> APIG
-    APIG -- "Invoke" --> L
-    L -- "SQL (TCP)" --> RDS
-    L -- "Fetch DB creds" --> SM
-    L -- "Object Operations" --> S3
+    user -- "HTTPS / JSON" --> Workers
+    Workers -- "SQL (TCP)" --> Neon
+    Workers -- "Cache Operations" --> Redis
+    Workers -- "Object Operations" --> S3
+    Workers -- "Fetch Secrets" --> Secrets
     user -- "Upload/Download" --> S3
 
     %% Notification flow
-    L -- "Send Push Notification" --> APNs
+    Workers -- "Send Push Notification" --> APNs
     APNs -- "Push Message" --> user
-
-    %% Monitoring
-    APIG -. "Logs / Metrics" .-> CW
-    L -. "Logs / Metrics" .-> CW
 ```
 
 ## ✨ Features
@@ -82,61 +84,96 @@ flowchart LR
 ### Prerequisites
 
 - Python 3.11+
-- PostgreSQL 13+
-- An AWS account with credentials configured (for S3 and other services)
+- Node.js 18+ (for Wrangler CLI)
+- Cloudflare account (free tier available)
+- Neon or Supabase account (for PostgreSQL database)
 
-### 1. Clone the Repository
+### Option 1: Deploy to Cloudflare Workers (Production)
+
+#### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/KojiroTsugaru/puctee-backend.git
 cd puctee-backend
 ```
 
-### 2. Create a Virtual Environment
+#### 2. Install Wrangler CLI
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+npm install -g wrangler
 ```
 
-### 3. Install Dependencies
+#### 3. Setup Cloudflare Workers
+
+Run the interactive setup script:
 
 ```bash
+./setup-cloudflare.sh
+```
+
+This will:
+- Login to Cloudflare
+- Configure all required secrets (DATABASE_URL, SECRET_KEY, etc.)
+- Prepare your environment for deployment
+
+#### 4. Setup Database
+
+Create a Neon or Supabase database and run migrations:
+
+```bash
+# Set your database URL
+export DATABASE_URL="postgresql://user:pass@host/db?sslmode=require"
+
+# Run migrations
+alembic upgrade head
+```
+
+#### 5. Deploy
+
+```bash
+./deploy.sh production
+```
+
+Your API will be available at: `https://puctee-api.your-subdomain.workers.dev`
+
+📖 **For detailed migration instructions**, see [CLOUDFLARE_MIGRATION.md](./CLOUDFLARE_MIGRATION.md)
+
+---
+
+### Option 2: Local Development
+
+#### 1. Clone and Setup
+
+```bash
+git clone https://github.com/KojiroTsugaru/puctee-backend.git
+cd puctee-backend
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+#### 2. Configure Environment Variables
 
-Create a `.env` file in the root directory and add the following variables. Replace the placeholder values with your actual credentials.
+Copy `.env.example` to `.env` and fill in your credentials:
 
-```env
-# PostgreSQL Database
-DATABASE_URL="postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE"
-
-# JWT Authentication
-SECRET_KEY="your_super_secret_key"
-ALGORITHM="HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# AWS Credentials (if not using IAM roles)
-AWS_ACCESS_KEY_ID="your_aws_access_key"
-AWS_SECRET_ACCESS_KEY="your_aws_secret_key"
-AWS_REGION="your_aws_region"
-S3_BUCKET_NAME="your_s3_bucket_name"
-
-# APNs Configuration
-APNS_CERT_PATH="/path/to/your/apns/cert.pem"
+```bash
+cp .env.example .env
 ```
 
-### 5. Run Database Migrations
+Edit `.env`:
+```env
+DATABASE_URL="postgresql://postgres:password@localhost:5432/puctee"
+SECRET_KEY="your_secret_key_here"
+# ... other variables
+```
 
-Apply the initial database schema using Alembic.
+#### 3. Run Database Migrations
 
 ```bash
 alembic upgrade head
 ```
 
-### 6. Run the Application
+#### 4. Run the Application
 
 ```bash
 uvicorn app.main:app --reload
@@ -144,9 +181,7 @@ uvicorn app.main:app --reload
 
 The API will be available at `http://127.0.0.1:8000`.
 
-### 7. Running Tests
-
-To run the test suite, use pytest.
+#### 5. Running Tests
 
 ```bash
 pytest
