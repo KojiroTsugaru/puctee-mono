@@ -29,9 +29,6 @@ if [[ "$ENVIRONMENT" != "development" && "$ENVIRONMENT" != "production" ]]; then
     exit 1
 fi
 
-echo "📦 Installing dependencies..."
-pip install -r requirements.txt
-
 echo "🔍 Running pre-deployment checks..."
 
 # Check if required secrets are set
