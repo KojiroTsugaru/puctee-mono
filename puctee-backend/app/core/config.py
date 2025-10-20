@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     AWS_REGION: str = "ap-northeast-1"
     AWS_S3_BUCKET: str
     
-    # Redis (use Upstash Redis for Cloudflare Workers)
+    # Redis (use Upstash Redis or Railway Redis)
     # Optional if using Supabase Realtime
     REDIS_URL: str = ""
 

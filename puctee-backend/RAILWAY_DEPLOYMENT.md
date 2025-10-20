@@ -45,6 +45,7 @@ git push origin migrate-to-cloudflare
    - Authorize Railway to access your GitHub
    - Select `puctee-mono` repository
    - Select `puctee-backend` as the root directory
+   - Select `migrate-to-railway` branch
 
 3. **Configure Build**
    - Railway will auto-detect Python and use `requirements.txt`

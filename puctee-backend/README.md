@@ -14,31 +14,28 @@ Puctee Backend is a comprehensive social planning API that helps friends coordin
 - **Database**: PostgreSQL (Supabase) with SQLAlchemy (Async ORM)
 - **Authentication**: JWT tokens with bcrypt password hashing
 - **Notifications**: Apple Push Notification service (APNs)
-- **Server**: Railway (recommended) or Cloudflare Workers
-- **Cache**: Redis (Upstash) or Supabase Realtime
-- **Storage**: AWS S3 (can migrate to Cloudflare R2 or Supabase Storage)
+- **Server**: Railway
+- **Cache**: Supabase Realtime (or Redis if needed)
+- **Storage**: AWS S3 (can migrate to Supabase Storage)
 - **Testing**: pytest with FastAPI TestClient
 - **Documentation**: Auto-generated OpenAPI/Swagger docs
 
 ## 🏗️ Architecture
 
-The Puctee backend follows a modern serverless architecture using Cloudflare Workers and Neon/Supabase.
+The Puctee backend follows a modern cloud architecture using Railway and Supabase.
 
 ```mermaid
 flowchart LR
     user["iOS App (SwiftUI)"]
     
-    subgraph Cloudflare ["Cloudflare"]
-        Workers["Workers (FastAPI)"]
-        Secrets["Workers Secrets"]
+    subgraph Railway ["Railway"]
+        API["FastAPI Server"]
+        Env["Environment Variables"]
     end
     
     subgraph Database ["Database"]
-        Neon["Neon/Supabase PostgreSQL"]
-    end
-    
-    subgraph Cache ["Cache"]
-        Redis["Upstash Redis"]
+        Supabase["Supabase PostgreSQL"]
+        Realtime["Supabase Realtime"]
     end
     
     subgraph Storage ["Storage"]
@@ -48,15 +45,15 @@ flowchart LR
     APNs["Apple Push Notification Service"]
 
     %% Request flow
-    user -- "HTTPS / JSON" --> Workers
-    Workers -- "SQL (TCP)" --> Neon
-    Workers -- "Cache Operations" --> Redis
-    Workers -- "Object Operations" --> S3
-    Workers -- "Fetch Secrets" --> Secrets
+    user -- "HTTPS / JSON" --> API
+    API -- "SQL (Async)" --> Supabase
+    API -- "WebSocket" --> Realtime
+    API -- "Object Operations" --> S3
+    API -- "Read Secrets" --> Env
     user -- "Upload/Download" --> S3
 
     %% Notification flow
-    Workers -- "Send Push Notification" --> APNs
+    API -- "Send Push Notification" --> APNs
     APNs -- "Push Message" --> user
 ```
 
@@ -116,34 +113,7 @@ Railway provides the easiest deployment experience with full FastAPI support.
 
 ---
 
-### Option 2: Deploy to Cloudflare Workers (Experimental)
-
-**Note**: Cloudflare Workers Python support is experimental and has limitations.
-
-#### Prerequisites
-
-- Node.js 18+ installed
-- Cloudflare account (free tier available)
-- Supabase database
-
-#### Quick Start
-
-```bash
-# Install Wrangler CLI
-npm install -g wrangler
-
-# Setup and deploy
-./setup-cloudflare.sh
-./deploy.sh production
-```
-
-**Documentation**:
-- [Cloudflare Migration Guide](./CLOUDFLARE_MIGRATION.md)
-- [Supabase Realtime Setup](./SUPABASE_REALTIME.md)
-
----
-
-### Option 3: Local Development
+### Option 2: Local Development
 
 #### 1. Clone and Setup
 

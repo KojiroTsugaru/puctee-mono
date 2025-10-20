@@ -8,37 +8,36 @@ url = settings.DATABASE_URL
 if url.startswith("postgresql://"):
     url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# Cloudflare Workers environment detection
-is_cloudflare = os.getenv("ENVIRONMENT") in ["production", "development"]
+# Railway environment detection
+is_production = os.getenv("ENVIRONMENT") == "production"
 
 if "localhost" in url:
     # Disable SSL for local development
-    connect_args = {"ssl": False}
+    connect_args = {}
 else:
     # Neon/Supabase use standard SSL certificates (no custom CA bundle needed)
     connect_args = {"ssl": "require"}
 
-# Optimize for Cloudflare Workers (short-lived connections)
-if is_cloudflare:
+# Optimize for Railway (persistent connections)
+if is_production:
     engine = create_async_engine(
         url,
         echo=False,
         future=True,
         connect_args=connect_args,
-        pool_pre_ping=False,  # Skip pre-ping for lower latency
-        pool_size=1,  # Minimal pool for Workers
-        max_overflow=0,  # No overflow for Workers
-        pool_timeout=10,
-        pool_recycle=300  # Shorter recycle time
+        pool_pre_ping=True,  # Enable pre-ping for connection health
+        pool_size=5,  # Moderate pool for Railway
+        max_overflow=10,  # Allow overflow for traffic spikes
+        pool_timeout=30,
+        pool_recycle=3600  # Recycle connections every hour
     )
 else:
-    # Traditional server configuration
+    # Local development with similar settings
     engine = create_async_engine(
         url,
         echo=False,
         future=True,
         connect_args=connect_args,
-        pool_pre_ping=True,
         pool_size=5,
         max_overflow=10,
         pool_timeout=30,
