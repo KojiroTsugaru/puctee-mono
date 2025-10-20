@@ -14,7 +14,6 @@ struct HomeSideBarMenu: View {
   @Environment(\.accountManager) private var accountManager
   @Environment(\.colorScheme) private var colorScheme
   
-  @State private var showLogoutAlert = false
   @State private var isShowingPhotoPicker = false
   
   var body: some View {
@@ -69,12 +68,6 @@ struct HomeSideBarMenu: View {
             .foregroundStyle(colorScheme == .dark ? .white : .black)
         }
         
-        Button {
-          showLogoutAlert = true
-        } label: {
-          Label("Logout", systemImage: "xmark")
-            .foregroundStyle(.red)
-        }
         Spacer()
       }
       .padding(.horizontal)
@@ -83,18 +76,6 @@ struct HomeSideBarMenu: View {
     .padding(.horizontal, 20)
     .sheet(isPresented: $isShowingPhotoPicker) {
       HomeSideBarProfileIconPicker(isShowingPhotoPicker: $isShowingPhotoPicker)
-    }
-
-    .alert("Log out?",
-           isPresented: $showLogoutAlert) {
-      Button("Cancel", role: .cancel) { }
-      Button("Yes", role: .destructive) {
-        Task {
-          await accountManager.logout()
-        }
-      }
-    } message: {
-      Text("You will need to log in again.\nAre you sure?")
     }
   }
 }
