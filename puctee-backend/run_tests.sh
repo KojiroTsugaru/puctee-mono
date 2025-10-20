@@ -1,23 +1,23 @@
 #!/bin/bash
 
-# 仮想環境が有効化されていない場合は有効化
+# Activate virtual environment if not already activated
 if [ -z "$VIRTUAL_ENV" ]; then
     if [ -d ".venv" ]; then
         source .venv/bin/activate
     else
-        echo "仮想環境が見つかりません。.venv ディレクトリが存在することを確認してください。"
+        echo "Virtual environment not found. Please ensure .venv directory exists."
         exit 1
     fi
 fi
 
-# Pythonのパスに app ディレクトリを追加
+# Add app directory to Python path
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
-# テストを実行
+# Run tests
 pytest tests/ -v --cov=app --cov-report=term-missing
 
-# エラーハンドリング
+# Error handling
 if [ $? -ne 0 ]; then
-    echo "テストの実行中にエラーが発生しました。"
+    echo "An error occurred while running tests."
     exit 1
 fi

@@ -1,221 +1,221 @@
-# Cloudflare Workers + Neon/Supabase 移行ガイド
+# Cloudflare Workers + Neon/Supabase Migration Guide
 
-このガイドでは、AWS Lambda + RDS から Cloudflare Workers + Neon/Supabase への移行手順を説明します。
+This guide explains the migration process from AWS Lambda + RDS to Cloudflare Workers + Neon/Supabase.
 
-## 前提条件
+## Prerequisites
 
-- Node.js 18以上がインストールされていること
-- Cloudflareアカウント（無料プランでOK）
-- Neon または Supabase アカウント
+- Node.js 18 or higher installed
+- Cloudflare account (free tier available)
+- Neon or Supabase account
 
-## ステップ1: データベースのセットアップ
+## Step 1: Database Setup
 
-### Option A: Neon を使用する場合（推奨）
+### Option A: Using Neon (Recommended)
 
-1. [Neon Console](https://console.neon.tech/) にアクセス
-2. 新しいプロジェクトを作成
-   - **Region**: Tokyo (ap-northeast-1) を選択
-   - **PostgreSQL version**: 15以上
-3. 接続文字列をコピー
+1. Access [Neon Console](https://console.neon.tech/)
+2. Create a new project
+   - **Region**: Select Tokyo (ap-northeast-1)
+   - **PostgreSQL version**: 15 or higher
+3. Copy the connection string
    ```
    postgresql://user:password@ep-xxx.ap-northeast-1.aws.neon.tech/dbname?sslmode=require
    ```
 
-### Option B: Supabase を使用する場合
+### Option B: Using Supabase
 
-1. [Supabase Console](https://app.supabase.com/) にアクセス
-2. 新しいプロジェクトを作成
-   - **Region**: Tokyo を選択
-3. Settings > Database から接続文字列をコピー
+1. Access [Supabase Console](https://app.supabase.com/)
+2. Create a new project
+   - **Region**: Select Tokyo
+3. Copy the connection string from Settings > Database
    ```
    postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
    ```
 
-## ステップ2: データ移行
+## Step 2: Data Migration
 
-### 現在のRDSからデータをエクスポート
+### Export data from current RDS
 
 ```bash
-# RDSからダンプを取得
+# Get dump from RDS
 pg_dump $CURRENT_RDS_URL > backup.sql
 
-# または特定のテーブルのみ
+# Or specific tables only
 pg_dump $CURRENT_RDS_URL --table=users --table=plans > backup.sql
 ```
 
-### Neon/Supabaseにインポート
+### Import to Neon/Supabase
 
 ```bash
-# 新しいデータベースにインポート
+# Import to new database
 psql $NEW_DATABASE_URL < backup.sql
 
-# または Alembic でスキーマを作成してからデータをインポート
+# Or create schema with Alembic first, then import data
 cd puctee-backend
 alembic upgrade head
 ```
 
-## ステップ3: Wrangler CLIのインストール
+## Step 3: Install Wrangler CLI
 
 ```bash
-# Wrangler CLIをグローバルにインストール
+# Install Wrangler CLI globally
 npm install -g wrangler
 
-# Cloudflareにログイン
+# Login to Cloudflare
 wrangler login
 ```
 
-## ステップ4: Secretsの設定
+## Step 4: Configure Secrets
 
-Cloudflare Workers に環境変数（Secrets）を設定します：
+Set environment variables (Secrets) for Cloudflare Workers:
 
 ```bash
 cd puctee-backend
 
-# データベース接続文字列
+# Database connection string
 wrangler secret put DATABASE_URL
-# 入力: postgresql://user:password@ep-xxx.ap-northeast-1.aws.neon.tech/dbname?sslmode=require
+# Input: postgresql://user:password@ep-xxx.ap-northeast-1.aws.neon.tech/dbname?sslmode=require
 
 # JWT Secret Key
 wrangler secret put SECRET_KEY
-# 入力: openssl rand -hex 32 で生成したキー
+# Input: Key generated with openssl rand -hex 32
 
-# AWS認証情報（S3用）
+# AWS credentials (for S3)
 wrangler secret put AWS_ACCESS_KEY_ID
 wrangler secret put AWS_SECRET_ACCESS_KEY
 wrangler secret put AWS_S3_BUCKET
 
-# Redis URL（Upstash Redisを推奨）
+# Redis URL (Upstash Redis recommended)
 wrangler secret put REDIS_URL
 # Upstash: https://console.upstash.com/
 
-# APNs設定
+# APNs configuration
 wrangler secret put APNS_SECRET_ARN
 wrangler secret put APNS_AUTH_KEY_ID
 wrangler secret put APNS_TEAM_ID
 wrangler secret put APNS_BUNDLE_ID
 ```
 
-## ステップ5: デプロイ
+## Step 5: Deploy
 
 ```bash
-# 開発環境にデプロイ
+# Deploy to development environment
 wrangler deploy --env development
 
-# 本番環境にデプロイ
+# Deploy to production environment
 wrangler deploy --env production
 ```
 
-デプロイが成功すると、URLが表示されます：
+After successful deployment, the URL will be displayed:
 ```
 https://puctee-api.your-subdomain.workers.dev
 ```
 
-## ステップ6: iOSアプリの接続先を変更
+## Step 6: Update iOS App Connection
 
-`puctee-ios/puctee/Utils/Networking/APIConfig.swift` などで、
-APIのベースURLを新しいCloudflare WorkersのURLに変更してください。
+In `puctee-ios/puctee/Utils/Networking/APIConfig.swift` or similar,
+update the API base URL to the new Cloudflare Workers URL.
 
 ```swift
-// 変更前
+// Before
 let baseURL = "https://your-api.execute-api.ap-northeast-1.amazonaws.com"
 
-// 変更後
+// After
 let baseURL = "https://puctee-api.your-subdomain.workers.dev"
 ```
 
-## ステップ7: 動作確認
+## Step 7: Verify Operation
 
 ```bash
-# ヘルスチェック
+# Health check
 curl https://puctee-api.your-subdomain.workers.dev/health
 
-# レスポンス例
+# Response example
 {"ok": true}
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### データベース接続エラー
+### Database Connection Error
 
 ```
 Error: connection timeout
 ```
 
-**解決方法**:
-- Neon/Supabaseの接続文字列が正しいか確認
-- `?sslmode=require` が含まれているか確認
-- Neon/Supabaseのダッシュボードでデータベースが起動しているか確認
+**Solution**:
+- Verify Neon/Supabase connection string is correct
+- Ensure `?sslmode=require` is included
+- Check if database is running in Neon/Supabase dashboard
 
-### デプロイエラー
+### Deployment Error
 
 ```
 Error: Python workers are not supported
 ```
 
-**解決方法**:
-- `wrangler.toml` の `compatibility_flags` を確認
-- Cloudflare Workers は現在 Python を実験的にサポート
-- 必要に応じて、FastAPI を Workers 互換の形式に変換
+**Solution**:
+- Check `compatibility_flags` in `wrangler.toml`
+- Cloudflare Workers currently supports Python experimentally
+- Convert FastAPI to Workers-compatible format if needed
 
-### 接続プールエラー
+### Connection Pool Error
 
 ```
 Error: too many connections
 ```
 
-**解決方法**:
-- `app/db/session.py` で `pool_size=1` に設定されているか確認
-- Neon/Supabase の接続制限を確認（無料プランは制限あり）
+**Solution**:
+- Verify `pool_size=1` is set in `app/db/session.py`
+- Check Neon/Supabase connection limits (free tier has restrictions)
 
-## パフォーマンス最適化
+## Performance Optimization
 
-### 1. Neon の Autoscaling を有効化
+### 1. Enable Neon Autoscaling
 
-Neon Console > Settings > Compute で Autoscaling を有効にすると、
-トラフィックに応じて自動的にスケールします。
+Enable Autoscaling in Neon Console > Settings > Compute to
+automatically scale based on traffic.
 
-### 2. Cloudflare Workers の地域設定
+### 2. Cloudflare Workers Region Settings
 
-`wrangler.toml` で特定の地域に制限することで、レイテンシを削減できます：
+Reduce latency by restricting to specific regions in `wrangler.toml`:
 
 ```toml
 [placement]
 mode = "smart"
 ```
 
-### 3. Redis キャッシュの活用
+### 3. Utilize Redis Cache
 
-頻繁にアクセスされるデータは Upstash Redis にキャッシュしましょう。
+Cache frequently accessed data in Upstash Redis.
 
-## コスト比較
+## Cost Comparison
 
 ### AWS Lambda + RDS
-- Lambda: リクエスト数に応じて課金
-- RDS: 常時稼働、最低 $15-30/月
+- Lambda: Charged based on request count
+- RDS: Always running, minimum $15-30/month
 
 ### Cloudflare Workers + Neon
-- Workers: 無料プランで 100,000 リクエスト/日
-- Neon: 無料プランで 0.5GB ストレージ、自動スケール
+- Workers: Free tier includes 100,000 requests/day
+- Neon: Free tier includes 0.5GB storage, auto-scaling
 
-**推定コスト削減**: 月額 $20-50 程度
+**Estimated cost savings**: $20-50/month
 
-## 次のステップ
+## Next Steps
 
-1. **S3 → Cloudflare R2 への移行**
-   - R2 は S3 互換 API を提供
-   - エグレス料金が無料
+1. **Migrate S3 → Cloudflare R2**
+   - R2 provides S3-compatible API
+   - Free egress charges
 
-2. **Upstash Redis の導入**
-   - Cloudflare Workers と統合が簡単
-   - グローバルレプリケーション
+2. **Introduce Upstash Redis**
+   - Easy integration with Cloudflare Workers
+   - Global replication
 
-3. **モニタリングの設定**
-   - Cloudflare Analytics でリクエストを監視
-   - Neon Console でデータベースパフォーマンスを監視
+3. **Setup Monitoring**
+   - Monitor requests with Cloudflare Analytics
+   - Monitor database performance in Neon Console
 
-## サポート
+## Support
 
-問題が発生した場合：
+If you encounter issues:
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - [Neon Docs](https://neon.tech/docs)
 - [Supabase Docs](https://supabase.com/docs)
