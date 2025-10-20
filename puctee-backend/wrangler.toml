@@ -34,10 +34,6 @@ APNS_USE_SANDBOX = "false"
 # - APNS_TEAM_ID
 # - APNS_BUNDLE_ID
 
-# Limits
-[limits]
-cpu_ms = 50000
-
 # Build configuration
 [build]
 command = ""
