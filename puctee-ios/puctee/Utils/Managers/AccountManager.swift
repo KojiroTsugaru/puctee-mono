@@ -110,6 +110,22 @@ import Kingfisher
     await fetchCurrentUser()
     await MainActor.run { self.didRestoreSession = true }
   }
+  
+  /// delete account
+  func deleteAccount() async throws {
+    try await UserService.shared.deleteAccount()
+    
+    // Clear tokens from keychain
+    KeychainHelper.standard.delete(service: "accessToken", account: "com.puctee")
+    KeychainHelper.standard.delete(service: "accessExp", account: "com.puctee")
+    KeychainHelper.standard.delete(service: "refreshToken", account: "com.puctee")
+    
+    // Clear user state
+    await MainActor.run {
+      self.currentUser = nil
+      self.isAuthenticated = false
+    }
+  }
 }
 
 // MARK: Environment Key

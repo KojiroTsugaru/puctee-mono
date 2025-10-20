@@ -26,6 +26,10 @@ struct PlanDetailLocationCard: View {
   
   @State private var showParticipantsMap: Bool = false
   
+  private var isLocationShareDisabled: Bool {
+    planManager.getWebsocket(planId: plan.id) == nil
+  }
+  
   var body: some View {
     VStack(spacing: 16) {
       HStack {
@@ -48,7 +52,7 @@ struct PlanDetailLocationCard: View {
       
       actionButtons
       
-      if true {
+      if isLocationShareDisabled {
         Text("Location check is available 15 min before the plan starts")
           .font(.caption2)
           .foregroundStyle(.secondary)
@@ -76,7 +80,7 @@ struct PlanDetailLocationCard: View {
       }
       .buttonStyle(PlainButtonStyle())
       .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-      .disabled(!true)
+      .disabled(isLocationShareDisabled)
       
       // Button to open Map
       Button {

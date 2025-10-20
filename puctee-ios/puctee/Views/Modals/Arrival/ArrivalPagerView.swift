@@ -13,8 +13,6 @@ struct ArrivalPagerView: View {
   private enum Step { case result, trustStats }
   @State private var step: Step = .result
   
-  @Environment(\.trustStatsManager) private var trustStatsManager
-  
   var body: some View {
     GeometryReader { proxy in
       ZStack {
@@ -33,7 +31,8 @@ struct ArrivalPagerView: View {
               
             case .trustStats:
               ArrivalTrustStatsPage(
-                previousLevel: trustStatsManager.trustStats?.trustLevel,
+                prevLevel: DeepLinkHandler.shared.pendingPrevTrustLevel ?? 0,
+                newLevel: DeepLinkHandler.shared.pendingNewTrustLevel ?? 0,
                 onBack: {
                   withAnimation(.easeInOut) { step = .result }
                 },

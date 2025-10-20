@@ -12,10 +12,14 @@ final class DeepLinkHandler: ObservableObject {
   @Published var pendingPlanId: Int?
   @Published var pendingArrivalResult: Bool?
   @Published var pendingPenaltyRequestId: Int?
+  @Published var pendingPrevTrustLevel: Double?
+  @Published var pendingNewTrustLevel: Double?
   
-  func handleArrival(planId: Int, isArrived: Bool?) {
+  func handleArrival(planId: Int, isArrived: Bool?, prevTrustLevel: Double? = nil, newTrustLevel: Double? = nil) {
     pendingPlanId = planId
     pendingArrivalResult = isArrived
+    pendingPrevTrustLevel = prevTrustLevel
+    pendingNewTrustLevel = newTrustLevel
   }
   
   func handlePenaltyApprovalRequest(requestId: Int) {
@@ -27,6 +31,8 @@ final class DeepLinkHandler: ObservableObject {
     pendingPlanId = nil
     pendingArrivalResult = nil
     pendingPenaltyRequestId = nil
+    pendingPrevTrustLevel = nil
+    pendingNewTrustLevel = nil
   }
 }
 

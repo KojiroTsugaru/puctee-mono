@@ -40,6 +40,7 @@ import Foundation
     print("🚀 [LocationShare] Starting location sharing for plan \(planId), user \(userId)")
     
     // まず参加者検証
+    /*
     do {
       let isValid = try await PlanService.shared.validateAccess(planId: planId, userId: userId)
       guard isValid else {
@@ -55,6 +56,7 @@ import Foundation
       self.errorMessage = "Error validating access: \(error)"
       return
     }
+     */
     
     // Supabase Realtimeチャンネルに接続
     print("🔌 [LocationShare] Connecting to channel: plan_location_\(planId)")

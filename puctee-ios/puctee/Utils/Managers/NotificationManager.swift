@@ -24,6 +24,8 @@ private enum NotificationPayloadKey {
   static let isArrived = "is_arrived"
   static let penaltyUserId = "penalty_user_id"
   static let requestId = "request_id"
+  static let prevTrustLevel = "prev_trust_level"
+  static let newTrustLevel = "new_trust_level"
 }
 
 // MARK: - Notification Manager
@@ -66,7 +68,12 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
       case NotificationCategory.planArrival:
         if let payload = extractArrivalPayload(from: content) {
           Task { @MainActor in
-            DeepLinkHandler.shared.handleArrival(planId: payload.planId, isArrived: payload.isArrived)
+            DeepLinkHandler.shared.handleArrival(
+              planId: payload.planId, 
+              isArrived: payload.isArrived,
+              prevTrustLevel: payload.prevTrustLevel,
+              newTrustLevel: payload.newTrustLevel
+            )
           }
         }
         completionHandler()
@@ -96,7 +103,12 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
       case NotificationCategory.planArrival:
         if let payload = extractArrivalPayload(from: content) {
           Task { @MainActor in
-            DeepLinkHandler.shared.handleArrival(planId: payload.planId, isArrived: payload.isArrived)
+            DeepLinkHandler.shared.handleArrival(
+              planId: payload.planId, 
+              isArrived: payload.isArrived,
+              prevTrustLevel: payload.prevTrustLevel,
+              newTrustLevel: payload.newTrustLevel
+            )
           }
         }
         completionHandler([.banner, .sound, .badge])
@@ -176,7 +188,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
   }
   
   /// 型安全＆ロバストに planArrival のペイロードを取り出す
-  private func extractArrivalPayload(from content: UNNotificationContent) -> (planId: Int, isArrived: Bool?)? {
+  private func extractArrivalPayload(from content: UNNotificationContent) -> (planId: Int, isArrived: Bool?, prevTrustLevel: Double?, newTrustLevel: Double?)? {
     let info = content.userInfo
     
     // plan_id は Int でも String でも来うる
@@ -195,8 +207,24 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
       return nil
     }()
     
+    // prev_trust_level は Double でも String でも来うる
+    let prevTrustLevel: Double? = {
+      if let d = info[NotificationPayloadKey.prevTrustLevel] as? Double { return d }
+      if let n = info[NotificationPayloadKey.prevTrustLevel] as? NSNumber { return n.doubleValue }
+      if let s = info[NotificationPayloadKey.prevTrustLevel] as? String { return Double(s) }
+      return nil
+    }()
+    
+    // new_trust_level は Double でも String でも来うる
+    let newTrustLevel: Double? = {
+      if let d = info[NotificationPayloadKey.newTrustLevel] as? Double { return d }
+      if let n = info[NotificationPayloadKey.newTrustLevel] as? NSNumber { return n.doubleValue }
+      if let s = info[NotificationPayloadKey.newTrustLevel] as? String { return Double(s) }
+      return nil
+    }()
+    
     guard let pid = planId else { return nil }
-    return (pid, isArrived)
+    return (pid, isArrived, prevTrustLevel, newTrustLevel)
   }
   
   /// 型安全に penaltyApprovalRequest のペイロードを取り出す
@@ -359,7 +387,7 @@ extension NotificationManager {
           case NotificationCategory.planArrival:
             if let p = self.extractArrivalPayload(from: content) {
               DispatchQueue.main.async {
-                ModalCoordinator.shared.enqueue(.arrival(planId: p.planId, isArrived: p.isArrived))
+                ModalCoordinator.shared.enqueue(.arrival(planId: p.planId, isArrived: p.isArrived, prevTrustLevel: p.prevTrustLevel, newTrustLevel: p.newTrustLevel))
               }
               consumedIDs.append(note.request.identifier)
             }

@@ -8,12 +8,13 @@
 import Foundation
 
 enum ModalRoute: Equatable, Identifiable {
-  case arrival(planId: Int, isArrived: Bool?)
+  case arrival(planId: Int, isArrived: Bool?, prevTrustLevel: Double?, newTrustLevel: Double?)
   case penaltyApprovalRequest(requestId: Int)
   
   var id: String {
     switch self {
-      case let .arrival(pid, isArrived): return "arrival-\(pid)-\(isArrived?.description ?? "nil")"
+      case let .arrival(pid, isArrived, prevTrust, newTrust): 
+        return "arrival-\(pid)-\(isArrived?.description ?? "nil")-\(prevTrust?.description ?? "nil")-\(newTrust?.description ?? "nil")"
       case let .penaltyApprovalRequest(requestId: requestId): return "penalty-\(requestId)"
     }
   }

@@ -133,6 +133,16 @@ class UserService {
     let (data, _) = try await APIClient.shared.request(url: url, method: "GET")
     return try SnakeCaseJSONDecoder().decode(TrustStats.self, from: data)
   }
+  
+  /// delete current user account
+  func deleteAccount() async throws {
+    let urlString = Env.API.baseURL + "users/me"
+    guard let url = URL(string: urlString) else {
+      throw URLError(.badURL)
+    }
+    
+    let (_, _) = try await APIClient.shared.request(url: url, method: "DELETE")
+  }
 }
 
 extension Data {

@@ -18,19 +18,25 @@ final class ModalCoordinator: ObservableObject {
   
   private init(deepLink: DeepLinkHandler = .shared) {
     // DeepLink の変化を監視 → Route を生成して投入
-    Publishers.CombineLatest3(deepLink.$pendingPlanId,
-                              deepLink.$pendingArrivalResult,
-                              deepLink.$pendingPenaltyRequestId)
+    Publishers.CombineLatest(
+      Publishers.CombineLatest3(deepLink.$pendingPlanId,
+                                deepLink.$pendingArrivalResult,
+                                deepLink.$pendingPenaltyRequestId),
+      Publishers.CombineLatest(deepLink.$pendingPrevTrustLevel,
+                               deepLink.$pendingNewTrustLevel)
+    )
     .receive(on: DispatchQueue.main)
-    .sink { [weak self] pid, arrived, requestId in
+    .sink { [weak self] basicInfo, trustLevels in
       guard let self else { return }
+      
+      let (pid, arrived, requestId) = basicInfo
+      let (prevTrust, newTrust) = trustLevels
       
       let incoming: ModalRoute
       if let requestId = requestId {
-        print("show penaltyApprovalRequest modal")
         incoming = .penaltyApprovalRequest(requestId: requestId)
       } else if let pid = pid, let arrived = arrived {
-        incoming = .arrival(planId: pid, isArrived: arrived)
+        incoming = .arrival(planId: pid, isArrived: arrived, prevTrustLevel: prevTrust, newTrustLevel: newTrust)
       } else {
         return
       }

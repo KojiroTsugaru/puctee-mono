@@ -370,3 +370,36 @@ async def test_push_notification(
         )
 
     return {"message": "Test notification sent successfully"}
+
+@router.delete("/me")
+async def delete_account(
+    current_user: str = Depends(get_current_username),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete current user account and all associated data
+    """
+    # Get current user
+    result = await db.execute(
+        select(User).where(User.username == current_user)
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    try:
+        # Delete user (cascade will handle related data)
+        await db.delete(user)
+        await db.commit()
+        
+        return {"message": "Account deleted successfully"}
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Failed to delete account for user {current_user}", exc_info=e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete account"
+        )

@@ -8,11 +8,12 @@
 import SwiftUI
 
 public struct ArrivalTrustStatsPage: View {
-  var previousLevel: Double?
   var onBack: () -> Void
   var onDone: () -> Void
+  let prevLevel: Double
+  let newLevel: Double
   
-  @State private var currentLevel: Double = 0
+  @State private var currentLevel: Double
   @State private var delta: Double? = nil
   @State private var isLoading = true
   @State private var error: String?
@@ -20,12 +21,15 @@ public struct ArrivalTrustStatsPage: View {
   @EnvironmentObject private var deepLink: DeepLinkHandler
   @Environment(\.trustStatsManager) private var trustStatsManager
   
-  public init(previousLevel: Double? = 0,
+  public init(prevLevel: Double,
+              newLevel: Double,
               onBack: @escaping () -> Void,
               onDone: @escaping () -> Void) {
-    self.previousLevel = previousLevel
     self.onBack = onBack
     self.onDone = onDone
+    self.prevLevel = prevLevel
+    self.newLevel = newLevel
+    self._currentLevel = State(initialValue: prevLevel)
   }
   
   public var body: some View {
@@ -88,42 +92,30 @@ public struct ArrivalTrustStatsPage: View {
     }
     .padding(.horizontal)
     .padding(.top, 12)
-    .task { await setupAndLoad() }
-  }
-  
-  // 初期セット → フェッチ
-  private func setupAndLoad() async {
-    currentLevel = previousLevel ?? 0
-    await load()
+    .task { await load() }
   }
   
   // TrustStatsManager を用いたフェッチ → 差分アニメ
   private func load() async {
     isLoading = true
     error = nil
-    await trustStatsManager.fetchTrustStats()
     
-    guard let stats = trustStatsManager.trustStats else {
-      isLoading = false
-      error = "No data"
-      return
-    }
+    // Calculate delta immediately since we have both values
+    delta = newLevel - prevLevel
     
-    // ← あなたの TrustStats に合わせて（例: trustLevel が 0...100）
-    let newLevel = stats.trustLevel
-    
-    let old = currentLevel
-    delta = newLevel - old
-    
+    // Animate to new level
     withAnimation(.spring(response: 0.6, dampingFraction: 0.9)) {
       currentLevel = newLevel
     }
     
-    // （任意）良い変化ならハプティクス
+    // Haptic feedback for positive changes
     if (delta ?? 0) > 0 {
       let gen = UINotificationFeedbackGenerator()
       gen.notificationOccurred(.success)
     }
+    
+    // Optional: Still fetch trust stats if needed for other data
+    await trustStatsManager.fetchTrustStats()
     
     isLoading = false
   }
