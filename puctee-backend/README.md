@@ -11,12 +11,12 @@ Puctee Backend is a comprehensive social planning API that helps friends coordin
 ## 🛠️ Tech Stack
 
 - **Framework**: FastAPI (Python 3.11+)
-- **Database**: PostgreSQL (Neon/Supabase) with SQLAlchemy (Async ORM)
+- **Database**: PostgreSQL (Supabase) with SQLAlchemy (Async ORM)
 - **Authentication**: JWT tokens with bcrypt password hashing
 - **Notifications**: Apple Push Notification service (APNs)
-- **Server**: Cloudflare Workers (Serverless)
-- **Cache**: Redis (Upstash)
-- **Storage**: AWS S3 (can migrate to Cloudflare R2)
+- **Server**: Railway (recommended) or Cloudflare Workers
+- **Cache**: Redis (Upstash) or Supabase Realtime
+- **Storage**: AWS S3 (can migrate to Cloudflare R2 or Supabase Storage)
 - **Testing**: pytest with FastAPI TestClient
 - **Documentation**: Auto-generated OpenAPI/Swagger docs
 
@@ -88,61 +88,62 @@ flowchart LR
 - Cloudflare account (free tier available)
 - Neon or Supabase account (for PostgreSQL database)
 
-### Option 1: Deploy to Cloudflare Workers (Production)
+### Option 1: Deploy to Railway (Recommended)
 
-#### 1. Clone the Repository
+Railway provides the easiest deployment experience with full FastAPI support.
 
-```bash
-git clone https://github.com/KojiroTsugaru/puctee-backend.git
-cd puctee-backend
-```
+#### Quick Start
 
-#### 2. Install Wrangler CLI
+1. **Push to GitHub**
+   ```bash
+   git push origin main
+   ```
 
-```bash
-npm install -g wrangler
-```
+2. **Deploy to Railway**
+   - Visit [railway.app](https://railway.app)
+   - Click "New Project" → "Deploy from GitHub repo"
+   - Select `puctee-mono` repository
+   - Set root directory: `puctee-backend`
 
-#### 3. Setup Cloudflare Workers
+3. **Configure Environment Variables**
+   - Add all variables from `.env.example`
+   - Railway Dashboard → Variables
 
-Run the interactive setup script:
+4. **Done!**
+   - Your API will be at: `https://your-project.up.railway.app`
 
-```bash
-./setup-cloudflare.sh
-```
-
-This will:
-- Login to Cloudflare
-- Configure all required secrets (DATABASE_URL, SECRET_KEY, etc.)
-- Prepare your environment for deployment
-
-#### 4. Setup Database
-
-Create a Neon or Supabase database and run migrations:
-
-```bash
-# Set your database URL
-export DATABASE_URL="postgresql://user:pass@host/db?sslmode=require"
-
-# Run migrations
-alembic upgrade head
-```
-
-#### 5. Deploy
-
-```bash
-./deploy.sh production
-```
-
-Your API will be available at: `https://puctee-api.your-subdomain.workers.dev`
-
-📖 **Documentation**:
-- [Cloudflare Migration Guide](./CLOUDFLARE_MIGRATION.md) - Complete migration instructions
-- [Supabase Realtime Setup](./SUPABASE_REALTIME.md) - WebSocket migration to Supabase
+**Full Guide**: [Railway Deployment Guide](./RAILWAY_DEPLOYMENT.md)
 
 ---
 
-### Option 2: Local Development
+### Option 2: Deploy to Cloudflare Workers (Experimental)
+
+**Note**: Cloudflare Workers Python support is experimental and has limitations.
+
+#### Prerequisites
+
+- Node.js 18+ installed
+- Cloudflare account (free tier available)
+- Supabase database
+
+#### Quick Start
+
+```bash
+# Install Wrangler CLI
+npm install -g wrangler
+
+# Setup and deploy
+./setup-cloudflare.sh
+./deploy.sh production
+```
+
+**Documentation**:
+- [Cloudflare Migration Guide](./CLOUDFLARE_MIGRATION.md)
+- [Supabase Realtime Setup](./SUPABASE_REALTIME.md)
+
+---
+
+### Option 3: Local Development
 
 #### 1. Clone and Setup
 
