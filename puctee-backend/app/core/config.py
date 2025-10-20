@@ -16,7 +16,12 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET: str
     
     # Redis (use Upstash Redis for Cloudflare Workers)
-    REDIS_URL: str
+    # Optional if using Supabase Realtime
+    REDIS_URL: str = ""
+
+    # Supabase (for Realtime/WebSocket)
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
 
     # APNs settings
     APNS_SECRET_ARN: str 

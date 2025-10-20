@@ -55,12 +55,30 @@ set_secret() {
 }
 
 # Set all required secrets
-set_secret "DATABASE_URL" "Neon/Supabase connection string (e.g., postgresql://user:pass@host/db?sslmode=require)"
+set_secret "DATABASE_URL" "Supabase/Neon connection string (e.g., postgresql://postgres:pass@db.xxx.supabase.co:5432/postgres)"
 set_secret "SECRET_KEY" "JWT Secret Key (generate with: openssl rand -hex 32)"
 set_secret "AWS_ACCESS_KEY_ID" "AWS Access Key ID (for S3)"
 set_secret "AWS_SECRET_ACCESS_KEY" "AWS Secret Access Key (for S3)"
 set_secret "AWS_S3_BUCKET" "S3 Bucket Name"
-set_secret "REDIS_URL" "Redis URL (Upstash recommended: rediss://default:pass@host:port)"
+
+echo ""
+echo "📝 Optional: Supabase Realtime (skip if using Neon + Redis)"
+read -p "Are you using Supabase? (y/n): " use_supabase
+
+if [[ "$use_supabase" == "y" || "$use_supabase" == "Y" ]]; then
+    set_secret "SUPABASE_URL" "Supabase Project URL (e.g., https://xxx.supabase.co)"
+    set_secret "SUPABASE_ANON_KEY" "Supabase Anon Key (from Settings > API)"
+    echo "   ℹ️  Redis is optional when using Supabase Realtime"
+    read -p "   Do you still want to configure Redis? (y/n): " use_redis
+    if [[ "$use_redis" == "y" || "$use_redis" == "Y" ]]; then
+        set_secret "REDIS_URL" "Redis URL (Upstash: rediss://default:pass@host:port)"
+    fi
+else
+    echo "   Using Neon - Redis is required for WebSocket"
+    set_secret "REDIS_URL" "Redis URL (Upstash recommended: rediss://default:pass@host:port)"
+fi
+
+echo ""
 set_secret "APNS_SECRET_ARN" "APNs Secret ARN"
 set_secret "APNS_AUTH_KEY_ID" "APNs Auth Key ID"
 set_secret "APNS_TEAM_ID" "Apple Team ID"

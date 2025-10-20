@@ -136,7 +136,9 @@ alembic upgrade head
 
 Your API will be available at: `https://puctee-api.your-subdomain.workers.dev`
 
-📖 **For detailed migration instructions**, see [CLOUDFLARE_MIGRATION.md](./CLOUDFLARE_MIGRATION.md)
+📖 **Documentation**:
+- [Cloudflare Migration Guide](./CLOUDFLARE_MIGRATION.md) - Complete migration instructions
+- [Supabase Realtime Setup](./SUPABASE_REALTIME.md) - WebSocket migration to Supabase
 
 ---
 

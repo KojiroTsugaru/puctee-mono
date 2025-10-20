@@ -23,12 +23,14 @@ APNS_USE_SANDBOX = "false"
 
 # Secrets - Set these using: wrangler secret put <KEY>
 # Required secrets:
-# - DATABASE_URL (Neon/Supabase connection string)
+# - DATABASE_URL (Supabase/Neon connection string)
 # - SECRET_KEY
 # - AWS_ACCESS_KEY_ID
 # - AWS_SECRET_ACCESS_KEY
 # - AWS_S3_BUCKET
-# - REDIS_URL
+# - REDIS_URL (Optional if using Supabase Realtime)
+# - SUPABASE_URL (If using Supabase)
+# - SUPABASE_ANON_KEY (If using Supabase)
 # - APNS_SECRET_ARN
 # - APNS_AUTH_KEY_ID
 # - APNS_TEAM_ID
