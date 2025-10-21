@@ -13,14 +13,13 @@ is_production = os.getenv("ENVIRONMENT") == "production"
 
 if "localhost" in url:
     # Disable SSL for local development
-    connect_args = {}
+    connect_args = {"prepared_statement_cache_size": 0}
 else:
-    # Supabase connection pooling (pgbouncer) requires statement_cache_size=0
-    # to disable prepared statements
+    # Supabase connection pooling (pgbouncer) requires disabling prepared statements
     connect_args = {
         "ssl": "require",
         "server_settings": {"jit": "off"},
-        "statement_cache_size": 0
+        "prepared_statement_cache_size": 0
     }
 
 # Optimize for Railway (persistent connections)
@@ -34,9 +33,7 @@ if is_production:
         pool_size=5,  # Moderate pool for Railway
         max_overflow=10,  # Allow overflow for traffic spikes
         pool_timeout=30,
-        pool_recycle=3600,  # Recycle connections every hour
-        # Disable prepared statements for pgbouncer compatibility
-        execution_options={"prepared_statement_cache_size": 0}
+        pool_recycle=3600  # Recycle connections every hour
     )
 else:
     # Local development with similar settings
@@ -48,8 +45,7 @@ else:
         pool_size=5,
         max_overflow=10,
         pool_timeout=30,
-        pool_recycle=3600,
-        execution_options={"prepared_statement_cache_size": 0}
+        pool_recycle=3600
     )
 
 AsyncSessionLocal = sessionmaker(
