@@ -31,6 +31,7 @@ else:
     }
 
 # Optimize for Railway (persistent connections)
+# Use smaller pool size for Supabase connection pooler
 if is_production:
     engine = create_async_engine(
         url,
@@ -38,8 +39,8 @@ if is_production:
         future=True,
         connect_args=connect_args,
         pool_pre_ping=True,  # Enable pre-ping for connection health
-        pool_size=5,  # Moderate pool for Railway
-        max_overflow=10,  # Allow overflow for traffic spikes
+        pool_size=2,  # Smaller pool for Supabase pooler
+        max_overflow=3,  # Limited overflow to avoid hitting pooler limits
         pool_timeout=30,
         pool_recycle=3600  # Recycle connections every hour
     )
@@ -50,8 +51,8 @@ else:
         echo=False,
         future=True,
         connect_args=connect_args,
-        pool_size=5,
-        max_overflow=10,
+        pool_size=2,
+        max_overflow=3,
         pool_timeout=30,
         pool_recycle=3600
     )
