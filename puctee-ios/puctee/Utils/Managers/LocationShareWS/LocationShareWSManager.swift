@@ -18,6 +18,8 @@ import Foundation
   private var realtimeChannel: RealtimeChannelV2?
   private var locationUpdateTimer: Timer?
   private let locationManager = LocationManager.shared
+  private var isSendingLocation = false
+  private var pendingLocationUpdate: (latitude: Double, longitude: Double)?
   
   var locations: [Int: LocationShare] = [:] // user_id -> LocationShare
   var errorMessage: String?
@@ -110,6 +112,16 @@ import Foundation
   
   // 位置情報を送信
   func sendLocationUpdate(latitude: Double, longitude: Double) async {
+    // 送信中の場合は、最新の位置情報を保存して後で送信
+    guard !isSendingLocation else {
+      print("⏳ [LocationShare] Already sending, queuing update: lat=\(latitude), lng=\(longitude)")
+      pendingLocationUpdate = (latitude, longitude)
+      return
+    }
+    
+    isSendingLocation = true
+    defer { isSendingLocation = false }
+    
     print("📤 [LocationShare] Sending location update: lat=\(latitude), lng=\(longitude)")
     
     let locationData = LocationShare(
@@ -124,14 +136,38 @@ import Foundation
       updatedAt: nil
     )
     
-    do {
-      try await websocketClient.database
-        .from("location_shares")
-        .upsert(locationData, onConflict: "plan_id,user_id")
-        .execute()
-      print("✅ [LocationShare] Location sent successfully")
-    } catch {
-      print("❌ [LocationShare] Failed to send location: \(error)")
+    // リトライロジック: 最大3回試行
+    var lastError: Error?
+    for attempt in 1...3 {
+      do {
+        try await websocketClient.database
+          .from("location_shares")
+          .upsert(locationData, onConflict: "plan_id,user_id")
+          .execute()
+        print("✅ [LocationShare] Location sent successfully (attempt \(attempt))")
+        
+        // 成功したら、保留中の更新があれば送信
+        if let pending = pendingLocationUpdate {
+          pendingLocationUpdate = nil
+          Task {
+            await sendLocationUpdate(latitude: pending.latitude, longitude: pending.longitude)
+          }
+        }
+        return
+      } catch {
+        lastError = error
+        print("⚠️ [LocationShare] Failed to send location (attempt \(attempt)/3): \(error)")
+        
+        // 最後の試行でなければ、少し待ってからリトライ
+        if attempt < 3 {
+          try? await Task.sleep(nanoseconds: UInt64(attempt) * 500_000_000) // 0.5秒 * attempt
+        }
+      }
+    }
+    
+    // 3回とも失敗した場合
+    if let error = lastError {
+      print("❌ [LocationShare] Failed to send location after 3 attempts: \(error)")
       await MainActor.run {
         self.errorMessage = "Failed to send location: \(error.localizedDescription)"
       }
