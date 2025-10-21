@@ -34,7 +34,9 @@ if is_production:
         pool_size=5,  # Moderate pool for Railway
         max_overflow=10,  # Allow overflow for traffic spikes
         pool_timeout=30,
-        pool_recycle=3600  # Recycle connections every hour
+        pool_recycle=3600,  # Recycle connections every hour
+        # Disable prepared statements for pgbouncer compatibility
+        execution_options={"prepared_statement_cache_size": 0}
     )
 else:
     # Local development with similar settings
@@ -46,7 +48,8 @@ else:
         pool_size=5,
         max_overflow=10,
         pool_timeout=30,
-        pool_recycle=3600
+        pool_recycle=3600,
+        execution_options={"prepared_statement_cache_size": 0}
     )
 
 AsyncSessionLocal = sessionmaker(
