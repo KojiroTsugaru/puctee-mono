@@ -136,7 +136,7 @@ import Foundation
       updatedAt: nil
     )
     
-    // リトライロジック: 最大3回試行
+    // リトライロジック: 最大3回試行（指数バックオフ）
     var lastError: Error?
     for attempt in 1...3 {
       do {
@@ -154,13 +154,30 @@ import Foundation
           }
         }
         return
+      } catch let error as NSError {
+        lastError = error
+        
+        // エラーの詳細をログ
+        if error.domain == NSURLErrorDomain {
+          print("⚠️ [LocationShare] Network error (attempt \(attempt)/3): Code \(error.code)")
+        } else {
+          print("⚠️ [LocationShare] Failed to send location (attempt \(attempt)/3): \(error)")
+        }
+        
+        // 最後の試行でなければ、指数バックオフで待機
+        if attempt < 3 {
+          let backoffSeconds = pow(2.0, Double(attempt - 1)) // 1秒, 2秒, 4秒
+          let nanoseconds = UInt64(backoffSeconds * 1_000_000_000)
+          print("⏳ [LocationShare] Retrying in \(backoffSeconds) seconds...")
+          try? await Task.sleep(nanoseconds: nanoseconds)
+        }
       } catch {
         lastError = error
         print("⚠️ [LocationShare] Failed to send location (attempt \(attempt)/3): \(error)")
         
-        // 最後の試行でなければ、少し待ってからリトライ
         if attempt < 3 {
-          try? await Task.sleep(nanoseconds: UInt64(attempt) * 500_000_000) // 0.5秒 * attempt
+          let backoffSeconds = pow(2.0, Double(attempt - 1))
+          try? await Task.sleep(nanoseconds: UInt64(backoffSeconds * 1_000_000_000))
         }
       }
     }
@@ -174,13 +191,14 @@ import Foundation
     }
   }
   
-  // 既存の位置情報を読み込み
+  // 既存の位置情報を読み込み（自分以外）
   private func loadExistingLocations() async {
     do {
       let response: [LocationShare] = try await websocketClient.database
         .from("location_shares")
         .select()
         .eq("plan_id", value: planId)
+        .neq("user_id", value: userId)  // 自分の位置情報は除外
         .execute()
         .value
       
@@ -189,26 +207,42 @@ import Foundation
           self.locations[location.userId] = location
         }
       }
+      print("📍 [LocationShare] Loaded \(response.count) other users' locations")
     } catch {
+      print("❌ [LocationShare] Failed to load existing locations: \(error)")
       await MainActor.run {
         self.errorMessage = "Failed to load existing locations: \(error.localizedDescription)"
       }
     }
   }
   
-  // リアルタイム更新を処理
+  // リアルタイム更新を処理（自分以外）
   private func handleLocationUpdate(_ change: AnyAction) {
     switch change {
     case .insert(let insertAction):
       if let location = try? insertAction.decodeRecord(as: LocationShare.self, decoder: decoder) {
+        // 自分の位置情報は無視
+        guard location.userId != userId else {
+          print("🚫 [LocationShare] Ignoring own location insert")
+          return
+        }
+        print("➕ [LocationShare] Added location for user \(location.userId)")
         locations[location.userId] = location
       }
     case .update(let updateAction):
       if let location = try? updateAction.decodeRecord(as: LocationShare.self, decoder: decoder) {
+        // 自分の位置情報は無視
+        guard location.userId != userId else {
+          print("🚫 [LocationShare] Ignoring own location update")
+          return
+        }
+        print("🔄 [LocationShare] Updated location for user \(location.userId)")
         locations[location.userId] = location
       }
     case .delete(let deleteAction):
       if let location = try? deleteAction.decodeOldRecord(as: LocationShare.self, decoder: decoder) {
+        guard location.userId != userId else { return }
+        print("➖ [LocationShare] Removed location for user \(location.userId)")
         locations.removeValue(forKey: location.userId)
       }
     case .select(_):
