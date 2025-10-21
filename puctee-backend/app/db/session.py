@@ -15,8 +15,13 @@ if "localhost" in url:
     # Disable SSL for local development
     connect_args = {}
 else:
-    # Neon/Supabase use standard SSL certificates (no custom CA bundle needed)
-    connect_args = {"ssl": "require"}
+    # Supabase connection pooling (pgbouncer) requires statement_cache_size=0
+    # to disable prepared statements
+    connect_args = {
+        "ssl": "require",
+        "server_settings": {"jit": "off"},
+        "statement_cache_size": 0
+    }
 
 # Optimize for Railway (persistent connections)
 if is_production:
