@@ -23,15 +23,16 @@ if "localhost" in url:
     # Disable SSL for local development
     connect_args = {"prepared_statement_cache_size": 0}
 else:
-    # Supabase connection pooling (pgbouncer) requires disabling prepared statements
+    # Supabase connection pooling (pgbouncer) in Transaction Mode
+    # - Disable prepared statements (required for pgbouncer)
+    # - Remove server_settings as they're not supported in Transaction Mode
     connect_args = {
         "ssl": "require",
-        "server_settings": {"jit": "off"},
         "prepared_statement_cache_size": 0
     }
 
-# Optimize for Railway (persistent connections)
-# Use smaller pool size for Supabase connection pooler
+# Optimize for Railway with Supabase Transaction Mode
+# Transaction Mode allows more connections but requires careful pool management
 if is_production:
     engine = create_async_engine(
         url,
@@ -39,10 +40,10 @@ if is_production:
         future=True,
         connect_args=connect_args,
         pool_pre_ping=True,  # Enable pre-ping for connection health
-        pool_size=2,  # Smaller pool for Supabase pooler
-        max_overflow=3,  # Limited overflow to avoid hitting pooler limits
+        pool_size=5,  # Transaction Mode can handle more connections
+        max_overflow=10,  # Allow burst traffic
         pool_timeout=30,
-        pool_recycle=3600  # Recycle connections every hour
+        pool_recycle=1800  # Recycle connections every 30 minutes (Transaction Mode best practice)
     )
 else:
     # Local development with similar settings
