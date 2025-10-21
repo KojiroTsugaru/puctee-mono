@@ -2,11 +2,19 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Ensure we use asyncpg driver for async operations
 url = settings.DATABASE_URL
 if url.startswith("postgresql://"):
     url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    logger.info(f"Converted DATABASE_URL to use asyncpg driver")
+elif url.startswith("postgresql+asyncpg://"):
+    logger.info(f"DATABASE_URL already uses asyncpg driver")
+else:
+    logger.warning(f"DATABASE_URL has unexpected format: {url[:20]}...")
 
 # Railway environment detection
 is_production = os.getenv("ENVIRONMENT") == "production"

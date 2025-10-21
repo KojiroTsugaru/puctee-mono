@@ -8,7 +8,9 @@ from sqlalchemy.orm import selectinload
 
 logger = logging.getLogger(__name__)
 
-def run_send_silent(plan_id: int):
+# DEPRECATED: This function is no longer used. Use the scheduler endpoint directly.
+# Kept for reference only.
+def run_send_silent_DEPRECATED(plan_id: int):
     """
     既存の内部処理を呼び出す関数。
     EventBridge Scheduler からの自前イベントで silent notification を送信
