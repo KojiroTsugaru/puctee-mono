@@ -17,4 +17,16 @@ struct LocationShare: Codable, Identifiable {
   let longitude: Double
   let createdAt: String?
   let updatedAt: String?
+  
+  enum CodingKeys: String, CodingKey {
+    case id
+    case planId = "plan_id"
+    case userId = "user_id"
+    case displayName = "display_name"
+    case profileImageUrl = "profile_image_url"
+    case latitude
+    case longitude
+    case createdAt = "created_at"
+    case updatedAt = "updated_at"
+  }
 }
