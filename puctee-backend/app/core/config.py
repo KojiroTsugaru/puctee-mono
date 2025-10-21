@@ -30,6 +30,18 @@ class Settings(BaseSettings):
     APNS_BUNDLE_ID: str
     APNS_USE_SANDBOX: bool
 
+    # Railway App URL for EventBridge Scheduler
+    # Railway automatically provides RAILWAY_PUBLIC_DOMAIN (e.g., "your-app.up.railway.app")
+    RAILWAY_PUBLIC_DOMAIN: str = ""
+    SCHEDULER_API_KEY: str = ""  # Optional: API key for scheduler endpoint authentication
+    
+    @property
+    def railway_app_url(self) -> str:
+        """Construct full Railway app URL from domain"""
+        if self.RAILWAY_PUBLIC_DOMAIN:
+            return f"https://{self.RAILWAY_PUBLIC_DOMAIN}"
+        return ""
+
     # Environment
     ENVIRONMENT: str = "development"
 

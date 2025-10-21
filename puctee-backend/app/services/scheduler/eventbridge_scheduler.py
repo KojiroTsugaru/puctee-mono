@@ -14,7 +14,7 @@ SCHEDULE_GROUP = "default"
 class EventBridgeSchedulerService:
     def __init__(self):
         self.client = boto3.client('scheduler', region_name=settings.AWS_REGION)
-        self.lambda_arn = f"arn:aws:lambda:{settings.AWS_REGION}:002066576827:function:puctee-app"
+        self.railway_endpoint = f"{settings.railway_app_url}/api/scheduler/silent-notification"
         self.role_arn = "arn:aws:iam::002066576827:role/puctee-scheduler-invoke-role"
         self.dlq_sqs_arn = "arn:aws:sqs:ap-northeast-1:002066576827:puctee-scheduler-dlq"
 
@@ -43,17 +43,31 @@ class EventBridgeSchedulerService:
 
             schedule_expression = f"at({when_utc.strftime('%Y-%m-%dT%H:%M:%S')})"
 
-            payload = {"job": "send_silent", "plan_id": plan_id, "schedule": schedule_name}
+            payload = {"plan_id": plan_id}
 
+            # HTTP target configuration for direct endpoint invocation
+            http_parameters = {
+                "HttpMethod": "POST",
+                "HeaderParameters": {
+                    "Content-Type": "application/json",
+                }
+            }
+            
+            # Add authentication header if API key is configured
+            if settings.SCHEDULER_API_KEY:
+                http_parameters["HeaderParameters"]["X-API-Key"] = settings.SCHEDULER_API_KEY
+            
             target = {
-                "Arn": self.lambda_arn,
+                "Arn": self.railway_endpoint,
                 "RoleArn": self.role_arn,
+                "HttpParameters": http_parameters,
                 "Input": json.dumps(payload),
                 "RetryPolicy": {
                     "MaximumEventAgeInSeconds": 86400,
                     "MaximumRetryAttempts": 10
                 },
             }
+            
             if self.dlq_sqs_arn:
                 target["DeadLetterConfig"] = {"Arn": self.dlq_sqs_arn}
 

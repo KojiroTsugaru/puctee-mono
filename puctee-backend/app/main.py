@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api.routers import auth, users, friends, notifications, invite
+from app.api.routers import auth, users, friends, notifications, invite, scheduler
 from app.api.routers.plans import router as plans_router
 
 @asynccontextmanager
@@ -31,6 +31,7 @@ app.include_router(friends.router, prefix="/api/friends", tags=["friends"])
 app.include_router(plans_router, prefix="/api/plans", tags=["plans"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(invite.router, tags=["invite"])
+app.include_router(scheduler.router, prefix="/api")
 
 @app.get("/")
 async def root():
