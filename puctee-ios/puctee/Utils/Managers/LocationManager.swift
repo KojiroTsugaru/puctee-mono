@@ -7,8 +7,9 @@
 
 import Foundation
 import CoreLocation
+import Combine
 
-final class LocationManager: NSObject, CLLocationManagerDelegate {
+final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
   static let shared = LocationManager()
   
   private let manager = CLLocationManager()
@@ -17,6 +18,14 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
   private(set) var userLocation: CLLocation?
   /// 即参照用（未取得なら nil）
   var userCoordinate: CLLocationCoordinate2D? { userLocation?.coordinate }
+  
+  /// 現在の位置情報権限状態
+  @Published private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
+  
+  /// Always権限が許可されているか
+  var hasAlwaysAuthorization: Bool {
+    authorizationStatus == .authorizedAlways
+  }
   
   // 複数同時要求を束ねるための保留
   private struct PendingRequest {
@@ -32,6 +41,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     manager.allowsBackgroundLocationUpdates = true
     manager.pausesLocationUpdatesAutomatically = true
     manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    // Initialize authorization status
+    authorizationStatus = manager.authorizationStatus
   }
   
   // 権限リクエスト（BG測位のため Always 推奨）
@@ -88,6 +99,9 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
   // MARK: - CLLocationManagerDelegate
   
   func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    DispatchQueue.main.async {
+      self.authorizationStatus = manager.authorizationStatus
+    }
     if manager.authorizationStatus != .authorizedAlways {
       print("⚠️ Background arrival check を安定させるには Always 権限が推奨です。")
     }

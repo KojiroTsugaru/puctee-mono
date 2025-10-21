@@ -18,6 +18,7 @@
 		2B0C2FE92E5806240085D002 /* ModalRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0C2FE82E5806190085D002 /* ModalRoute.swift */; };
 		2B0C2FEB2E5806330085D002 /* ModalCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0C2FEA2E58062E0085D002 /* ModalCoordinator.swift */; };
 		2B0C2FED2E5806510085D002 /* GlobalModalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0C2FEC2E5806440085D002 /* GlobalModalHost.swift */; };
+		2B14C1D02EA75D3B00564393 /* LocationAlwaysPermissionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1CF2EA75D3B00564393 /* LocationAlwaysPermissionModal.swift */; };
 		2B16B0B52DCC9364003AC5F7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B16B0B02DCC9364003AC5F7 /* Assets.xcassets */; };
 		2B16B0B62DCC9364003AC5F7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B16B0B12DCC9364003AC5F7 /* RootView.swift */; };
 		2B16B0B72DCC9364003AC5F7 /* pucteeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B16B0B32DCC9364003AC5F7 /* pucteeApp.swift */; };
@@ -154,6 +155,7 @@
 		2B0C2FE82E5806190085D002 /* ModalRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalRoute.swift; sourceTree = "<group>"; };
 		2B0C2FEA2E58062E0085D002 /* ModalCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalCoordinator.swift; sourceTree = "<group>"; };
 		2B0C2FEC2E5806440085D002 /* GlobalModalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalModalHost.swift; sourceTree = "<group>"; };
+		2B14C1CF2EA75D3B00564393 /* LocationAlwaysPermissionModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationAlwaysPermissionModal.swift; sourceTree = "<group>"; };
 		2B16B0852DCC933D003AC5F7 /* puctee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = puctee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B16B0932DCC933E003AC5F7 /* pucteeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pucteeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B16B09D2DCC933E003AC5F7 /* pucteeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pucteeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -604,6 +606,7 @@
 		2BB2F0702DCDF37C00E50585 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				2B14C1CF2EA75D3B00564393 /* LocationAlwaysPermissionModal.swift */,
 				2BB2F0712DCDF3CD00E50585 /* HomeView.swift */,
 				2BB2F07A2DCDF48E00E50585 /* HomeCreatePlanButton.swift */,
 				2BD1E0AE2DDC83BA00FBA4EE /* Modals */,
@@ -1004,6 +1007,7 @@
 				2B16B0B62DCC9364003AC5F7 /* RootView.swift in Sources */,
 				2B1E5C552DEC451900E0E3FC /* TrustStats.swift in Sources */,
 				2BB2F0922DCE5A9300E50585 /* PlanEditorView.swift in Sources */,
+				2B14C1D02EA75D3B00564393 /* LocationAlwaysPermissionModal.swift in Sources */,
 				2BB2F0832DCDF65200E50585 /* Plan.swift in Sources */,
 				2BB2F0982DCF3A6F00E50585 /* PlanEditorLocationPicker.swift in Sources */,
 				2BD1E0592DD9D7A500FBA4EE /* PlanDetailLocationCard.swift in Sources */,
