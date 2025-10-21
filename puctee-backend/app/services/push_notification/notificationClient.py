@@ -16,7 +16,10 @@ class notificationClient:
     def _initialize_client(self):
         try:
             # Get authentication key from AWS Secrets Manager
-            sm = boto3.client("secretsmanager")
+            sm = boto3.client(
+                "secretsmanager",
+                region_name=settings.AWS_REGION
+            )
             resp = sm.get_secret_value(SecretId=settings.APNS_SECRET_ARN)
             key_pem = resp["SecretString"]
             
