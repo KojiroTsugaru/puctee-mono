@@ -58,10 +58,17 @@ def upgrade() -> None:
     op.create_foreign_key('notifications_user_id_fkey', 'notifications', 'users', ['user_id'], ['id'], ondelete='CASCADE')
     
     # penalty_approval_requests
-    op.drop_constraint('penalty_approval_requests_penalty_user_id_fkey', 'penalty_approval_requests', type_='foreignkey')
+    # Check if constraint exists before dropping
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    constraints = [c['name'] for c in inspector.get_foreign_keys('penalty_approval_requests')]
+    
+    if 'penalty_approval_requests_penalty_user_id_fkey' in constraints:
+        op.drop_constraint('penalty_approval_requests_penalty_user_id_fkey', 'penalty_approval_requests', type_='foreignkey')
     op.create_foreign_key('penalty_approval_requests_penalty_user_id_fkey', 'penalty_approval_requests', 'users', ['penalty_user_id'], ['id'], ondelete='CASCADE')
     
-    op.drop_constraint('penalty_approval_requests_approver_user_id_fkey', 'penalty_approval_requests', type_='foreignkey')
+    if 'penalty_approval_requests_approver_user_id_fkey' in constraints:
+        op.drop_constraint('penalty_approval_requests_approver_user_id_fkey', 'penalty_approval_requests', type_='foreignkey')
     op.create_foreign_key('penalty_approval_requests_approver_user_id_fkey', 'penalty_approval_requests', 'users', ['approver_user_id'], ['id'], ondelete='SET NULL')
 
 
