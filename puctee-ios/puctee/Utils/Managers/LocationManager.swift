@@ -35,12 +35,18 @@ final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObje
   }
   private var pendingRequests: [UUID: PendingRequest] = [:]
   
+  // 位置情報更新のコールバック
+  var onLocationUpdate: ((CLLocationCoordinate2D) -> Void)?
+  private var isMonitoring = false
+  
   private override init() {
     super.init()
     manager.delegate = self
     manager.allowsBackgroundLocationUpdates = true
-    manager.pausesLocationUpdatesAutomatically = true
-    manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    manager.pausesLocationUpdatesAutomatically = false  // バックグラウンドでも継続
+    manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters  // 精度を下げてバッテリー節約
+    manager.distanceFilter = 20  // 20m移動したら更新（iOS 18.4対応）
+    manager.activityType = .otherNavigation  // ナビゲーション用の最適化
     // Initialize authorization status
     authorizationStatus = manager.authorizationStatus
   }
@@ -96,6 +102,23 @@ final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObje
     manager.requestLocation()
   }
   
+  /// 継続的な位置情報監視を開始（バックグラウンドでも動作）
+  func startMonitoringLocation() {
+    guard !isMonitoring else { return }
+    isMonitoring = true
+    manager.startUpdatingLocation()
+    print("📍 [LocationManager] Started continuous location monitoring")
+  }
+  
+  /// 継続的な位置情報監視を停止
+  func stopMonitoringLocation() {
+    guard isMonitoring else { return }
+    isMonitoring = false
+    manager.stopUpdatingLocation()
+    onLocationUpdate = nil
+    print("🛑 [LocationManager] Stopped continuous location monitoring")
+  }
+  
   // MARK: - CLLocationManagerDelegate
   
   func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -112,6 +135,12 @@ final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObje
     
     if let loc = best, loc.horizontalAccuracy > 0 {
       userLocation = loc
+      
+      // 継続監視中の場合はコールバックを呼ぶ
+      if isMonitoring {
+        onLocationUpdate?(loc.coordinate)
+      }
+      
       // ペンディングを一括解決
       guard !pendingRequests.isEmpty else { return }
       let reqs = pendingRequests

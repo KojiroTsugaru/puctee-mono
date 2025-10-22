@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LocationShare: Codable, Identifiable {
+struct LocationShare: Codable, Identifiable, Equatable {
   let id: Int?
   let planId: Int
   let userId: Int
