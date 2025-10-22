@@ -31,7 +31,7 @@ puctee-mono/
 **iOS:**
 - macOS
 - Xcode (latest stable version)
-- iOS 15.0+ (deployment target)
+- iOS 18.5+ (deployment target)
 
 ### Setup
 

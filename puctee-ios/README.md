@@ -31,6 +31,7 @@ To get a local copy up and running, follow these simple steps.
 
 -   Xcode (latest stable version recommended)
 -   macOS
+-   iOS 18.5+ (minimum deployment target)
 
 ### Setup
 
