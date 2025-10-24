@@ -31,7 +31,7 @@ struct SuffixWheelStack: View {
                 }
             }
           }
-          .onChange(of: selection) { new in
+          .onChange(of: selection) { _, new in
             withAnimation { reader.scrollTo(new, anchor: .center) }
           }
         }
@@ -83,7 +83,7 @@ struct StringWheelStack: View {
             }
             Color.clear.frame(height: (totalH - itemHeight)/2)
           }
-          .onChange(of: selection) { new in
+          .onChange(of: selection) { _, new in
             withAnimation { reader.scrollTo(new, anchor: .center) }
           }
         }
@@ -129,9 +129,9 @@ struct CustomTimePicker: View {
     }
     .frame(height: pickerH)
     .onAppear(perform: syncFromDate)
-    .onChange(of: hour12) { _ in updateDate() }
-    .onChange(of: minute)   { _ in updateDate() }
-    .onChange(of: period)   { _ in updateDate() }
+    .onChange(of: hour12) { _, _ in updateDate() }
+    .onChange(of: minute)   { _, _ in updateDate() }
+    .onChange(of: period)   { _, _ in updateDate() }
   }
   
   private func syncFromDate() {

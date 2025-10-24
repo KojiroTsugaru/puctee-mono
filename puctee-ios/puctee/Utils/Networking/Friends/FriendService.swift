@@ -66,7 +66,7 @@ class FriendService {
     let body = ["receiver_id": receiverId]
     request.httpBody = try JSONEncoder().encode(body)
     
-    let (data, response) = try await APIClient.shared.request(for: request)
+    let (data, _) = try await APIClient.shared.request(for: request)
     return try SnakeCaseJSONDecoder().decode(FriendInvite.self, from: data)
   }
   

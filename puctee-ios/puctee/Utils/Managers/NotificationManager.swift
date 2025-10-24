@@ -338,11 +338,9 @@ extension NotificationManager {
     if let c = LocationManager.shared.userCoordinate { // キャッシュ
       return c
     }
-#if DEBUG
-#if targetEnvironment(simulator)
+#if DEBUG && targetEnvironment(simulator)
     // シミュレータの保険（Apple Park）
     return .init(latitude: 37.3349, longitude: -122.0090)
-#endif
 #endif
     return nil
   }

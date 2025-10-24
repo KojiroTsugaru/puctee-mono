@@ -189,7 +189,7 @@ import Foundation
     }
     
     // If all 5 attempts failed (no error message - will auto-retry next time)
-    if let error = lastError {
+    if let _ = lastError {
       print("❌ [LocationShare] Failed after 5 attempts, will retry on next update")
     }
   }

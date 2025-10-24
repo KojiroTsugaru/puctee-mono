@@ -68,7 +68,7 @@ struct PlanEditorParticipantSearchView: View {
           .listRowBackground(Color.clear)
       }
     })
-    .onChange(of: query) { newQuery in
+    .onChange(of: query) { _, newQuery in
       Task {
         if newQuery.isEmpty {
           // Clear search results if search query is empty
@@ -103,7 +103,7 @@ struct PlanEditorParticipantSearchView: View {
   // Selection toggle
   private func toggleSelection(of user: User) {
     if let idx = selectedUsers.firstIndex(of: user) {
-      withAnimation(.easeInOut(duration: 0.2)) {
+      _ = withAnimation(.easeInOut(duration: 0.2)) {
         selectedUsers.remove(at: idx)
       }
     } else {
