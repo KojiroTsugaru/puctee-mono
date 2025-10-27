@@ -1,6 +1,7 @@
 """
 Scheduler endpoint for EventBridge Scheduler to trigger scheduled tasks
 """
+import json
 import logging
 from fastapi import APIRouter, HTTPException, Header, status, Depends, Request
 from pydantic import BaseModel
@@ -41,7 +42,6 @@ async def trigger_silent_notification(
     logger.info(f"[SCHEDULER] Raw request body: {raw_body.decode('utf-8')}")
     
     # Parse request - handle EventBridge event structure
-    import json
     try:
         body_dict = json.loads(raw_body)
         logger.info(f"[SCHEDULER] Parsed body: {body_dict}")
