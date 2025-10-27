@@ -116,30 +116,21 @@ class EventBridgeSchedulerService:
             except self.events_client.exceptions.ResourceNotFoundException:
                 logger.info(f"Connection not found, creating new one")
                 
-                # Create connection with API key auth if configured
-                if settings.SCHEDULER_API_KEY:
-                    conn_response = self.events_client.create_connection(
-                        Name=self.connection_name,
-                        AuthorizationType='API_KEY',
-                        AuthParameters={
-                            'ApiKeyAuthParameters': {
-                                'ApiKeyName': 'X-API-Key',
-                                'ApiKeyValue': settings.SCHEDULER_API_KEY
-                            }
+                # Create connection with API key auth
+                # API Key is required for secure communication
+                if not settings.SCHEDULER_API_KEY:
+                    raise ValueError("SCHEDULER_API_KEY must be configured in .env")
+                
+                conn_response = self.events_client.create_connection(
+                    Name=self.connection_name,
+                    AuthorizationType='API_KEY',
+                    AuthParameters={
+                        'ApiKeyAuthParameters': {
+                            'ApiKeyName': 'X-API-Key',
+                            'ApiKeyValue': settings.SCHEDULER_API_KEY
                         }
-                    )
-                else:
-                    # No authentication - use invocation parameters to add headers
-                    conn_response = self.events_client.create_connection(
-                        Name=self.connection_name,
-                        AuthorizationType='BASIC',
-                        AuthParameters={
-                            'BasicAuthParameters': {
-                                'Username': 'puctee',
-                                'Password': 'dummy'
-                            }
-                        }
-                    )
+                    }
+                )
                 connection_arn = conn_response['ConnectionArn']
                 logger.info(f"Created connection: {connection_arn}")
 

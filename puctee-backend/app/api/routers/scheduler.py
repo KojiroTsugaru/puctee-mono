@@ -66,14 +66,20 @@ async def trigger_silent_notification(
             detail=f"Invalid request format: {str(e)}"
         )
     
-    # Verify API key if configured
-    if settings.SCHEDULER_API_KEY:
-        if not x_api_key or x_api_key != settings.SCHEDULER_API_KEY:
-            logger.warning(f"Unauthorized scheduler request for plan {request.plan_id}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or missing API key"
-            )
+    # Verify API key (required for security)
+    if not settings.SCHEDULER_API_KEY:
+        logger.error("[SCHEDULER] SCHEDULER_API_KEY not configured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Server configuration error"
+        )
+    
+    if not x_api_key or x_api_key != settings.SCHEDULER_API_KEY:
+        logger.warning(f"[SCHEDULER] Unauthorized request - API key mismatch")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key"
+        )
     
     logger.info(f"[SCHEDULER] Received scheduled silent notification request for plan {request.plan_id}")
     
