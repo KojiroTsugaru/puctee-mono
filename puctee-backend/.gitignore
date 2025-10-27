@@ -54,6 +54,11 @@ package/
 deployment_package/
 deployment.zip
 
+# Lambda artifacts
+lambda/function.zip
+lambda/trust-policy.json
+lambda/scheduler-lambda-policy.json
+
 # Cloudflare Workers
 node_modules/
 .wrangler/
