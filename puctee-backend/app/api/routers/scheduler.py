@@ -2,7 +2,7 @@
 Scheduler endpoint for EventBridge Scheduler to trigger scheduled tasks
 """
 import logging
-from fastapi import APIRouter, HTTPException, Header, status, Depends
+from fastapi import APIRouter, HTTPException, Header, status, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ class SchedulerRequest(BaseModel):
 
 @router.post("/silent-notification")
 async def trigger_silent_notification(
-    request: SchedulerRequest,
+    raw_request: Request,
     db: AsyncSession = Depends(get_db),
     x_api_key: Optional[str] = Header(None, alias="X-API-Key")
 ):
@@ -36,6 +36,23 @@ async def trigger_silent_notification(
     This endpoint is triggered at the scheduled time to wake up iOS apps
     and check for arrival at plan locations.
     """
+    # Log raw request body for debugging
+    raw_body = await raw_request.body()
+    logger.info(f"[SCHEDULER] Raw request body: {raw_body.decode('utf-8')}")
+    
+    # Parse request
+    import json
+    try:
+        body_dict = json.loads(raw_body)
+        logger.info(f"[SCHEDULER] Parsed body: {body_dict}")
+        request = SchedulerRequest(**body_dict)
+    except Exception as e:
+        logger.error(f"[SCHEDULER] Failed to parse request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid request format: {str(e)}"
+        )
+    
     # Verify API key if configured
     if settings.SCHEDULER_API_KEY:
         if not x_api_key or x_api_key != settings.SCHEDULER_API_KEY:
