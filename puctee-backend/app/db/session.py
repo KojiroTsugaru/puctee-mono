@@ -21,29 +21,44 @@ is_production = os.getenv("ENVIRONMENT") == "production"
 
 if "localhost" in url:
     # Disable SSL for local development
-    connect_args = {"prepared_statement_cache_size": 0}
+    connect_args = {
+        "prepared_statement_cache_size": 0,
+        "statement_cache_size": 0
+    }
 else:
-    # Supabase connection pooling (pgbouncer) in Transaction Mode
-    # - Disable prepared statements (required for pgbouncer)
-    # - Remove server_settings as they're not supported in Transaction Mode
+    # Railway/Supabase connection pooling (pgbouncer) in Transaction Mode
+    # CRITICAL: pgbouncer in transaction mode does NOT support:
+    # - Prepared statements (must disable both caches)
+    # - Server-side cursors
+    # - Advisory locks
     connect_args = {
         "ssl": "require",
-        "prepared_statement_cache_size": 0
+        "prepared_statement_cache_size": 0,
+        "statement_cache_size": 0,  # Disable statement cache completely
+        "server_settings": {
+            "jit": "off"  # Disable JIT to reduce statement preparation
+        }
     }
 
-# Optimize for Railway with Supabase Transaction Mode
-# Transaction Mode allows more connections but requires careful pool management
+# Optimize for Railway with pgbouncer Transaction Mode
+# Transaction Mode: Each transaction gets a new connection from the pool
+# Best practices:
+# - Keep pool_size small (pgbouncer handles the real pooling)
+# - Use pool_pre_ping to detect stale connections
+# - Recycle connections frequently to avoid state issues
+# - Use pool_reset_on_return to ensure clean state
 if is_production:
     engine = create_async_engine(
         url,
         echo=False,
         future=True,
         connect_args=connect_args,
-        pool_pre_ping=True,  # Enable pre-ping for connection health
-        pool_size=5,  # Transaction Mode can handle more connections
-        max_overflow=10,  # Allow burst traffic
+        pool_pre_ping=True,  # CRITICAL: Detect stale connections before use
+        pool_size=3,  # Small pool - pgbouncer does the real pooling
+        max_overflow=5,  # Limited overflow for burst traffic
         pool_timeout=30,
-        pool_recycle=1800  # Recycle connections every 30 minutes (Transaction Mode best practice)
+        pool_recycle=300,  # Recycle every 5 minutes (aggressive for transaction mode)
+        pool_reset_on_return="rollback"  # Ensure clean state between requests
     )
 else:
     # Local development with similar settings
@@ -55,7 +70,8 @@ else:
         pool_size=2,
         max_overflow=3,
         pool_timeout=30,
-        pool_recycle=3600
+        pool_recycle=3600,
+        pool_reset_on_return="rollback"
     )
 
 AsyncSessionLocal = sessionmaker(
