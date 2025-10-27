@@ -18,23 +18,33 @@ from app.services.scheduler.eventbridge_scheduler import eventbridge_scheduler
 from app.core.config import settings
 
 
-async def test_api_destination():
-    """Test API Destination creation"""
+async def test_lambda_function():
+    """Test Lambda function setup"""
     print("=" * 60)
-    print("Testing API Destination Setup")
+    print("Testing Lambda Function Setup")
     print("=" * 60)
     
     print(f"\n📍 Railway Endpoint: {settings.railway_app_url}/api/scheduler/silent-notification")
     print(f"🔑 API Key Configured: {'Yes' if settings.SCHEDULER_API_KEY else 'No'}")
     print(f"🌍 AWS Region: {settings.AWS_REGION}")
+    print(f"🔧 Lambda Function: puctee-scheduler-trigger")
     
     try:
-        print("\n🔄 Ensuring API Destination exists...")
-        api_destination_arn = await eventbridge_scheduler._ensure_api_destination()
-        print(f"✅ API Destination ARN: {api_destination_arn}")
+        import boto3
+        lambda_client = boto3.client('lambda', region_name=settings.AWS_REGION)
+        
+        print("\n🔄 Checking Lambda function...")
+        response = lambda_client.get_function(FunctionName='puctee-scheduler-trigger')
+        print(f"✅ Lambda Function ARN: {response['Configuration']['FunctionArn']}")
+        print(f"✅ Runtime: {response['Configuration']['Runtime']}")
+        print(f"✅ Last Modified: {response['Configuration']['LastModified']}")
         return True
+    except lambda_client.exceptions.ResourceNotFoundException:
+        print(f"❌ Lambda function not found. Please deploy it first:")
+        print(f"   cd lambda && ./deploy.sh")
+        return False
     except Exception as e:
-        print(f"❌ Failed to create/verify API Destination: {e}")
+        print(f"❌ Failed to verify Lambda function: {e}")
         return False
 
 
@@ -167,10 +177,10 @@ async def main():
         print("\n❌ Configuration check failed. Please fix the issues above.")
         return
     
-    # Step 2: Test API Destination
-    api_dest_ok = await test_api_destination()
-    if not api_dest_ok:
-        print("\n❌ API Destination test failed. Cannot proceed.")
+    # Step 2: Test Lambda Function
+    lambda_ok = await test_lambda_function()
+    if not lambda_ok:
+        print("\n❌ Lambda function test failed. Cannot proceed.")
         return
     
     # Step 3: Test schedule creation
