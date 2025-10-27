@@ -41,7 +41,7 @@ async def trigger_silent_notification(
     raw_body = await raw_request.body()
     logger.info(f"[SCHEDULER] Raw request body: {raw_body.decode('utf-8')}")
     
-    # Parse request - handle EventBridge event structure
+    # Parse request - handle both direct format and EventBridge format
     try:
         body_dict = json.loads(raw_body)
         logger.info(f"[SCHEDULER] Parsed body: {body_dict}")
@@ -54,9 +54,11 @@ async def trigger_silent_notification(
             if plan_id is None:
                 raise ValueError("plan_id not found in event detail")
             request = SchedulerRequest(plan_id=plan_id)
-        else:
-            # Direct request format
+        elif 'plan_id' in body_dict:
+            # Direct request format (from InputTransformer)
             request = SchedulerRequest(**body_dict)
+        else:
+            raise ValueError("plan_id not found in request")
     except Exception as e:
         logger.error(f"[SCHEDULER] Failed to parse request: {e}")
         raise HTTPException(

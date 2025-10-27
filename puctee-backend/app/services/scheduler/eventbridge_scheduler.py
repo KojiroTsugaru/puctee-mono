@@ -59,8 +59,8 @@ class EventBridgeSchedulerService:
             rule_arn = rule_response['RuleArn']
             logger.info(f"Created EventBridge Rule: {rule_arn}")
             
-            # Add API Destination as target
-            # Send the entire event to debug the structure
+            # Add API Destination as target with InputTransformer
+            # Extract plan_id from event detail and send as JSON
             self.events_client.put_targets(
                 Rule=rule_name,
                 Targets=[{
@@ -71,6 +71,12 @@ class EventBridgeSchedulerService:
                         'HeaderParameters': {
                             'Content-Type': 'application/json'
                         }
+                    },
+                    'InputTransformer': {
+                        'InputPathsMap': {
+                            'planId': '$.detail.plan_id'
+                        },
+                        'InputTemplate': '{"plan_id": <planId>}'
                     },
                     'RetryPolicy': {
                         'MaximumRetryAttempts': 10,
