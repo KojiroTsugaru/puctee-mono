@@ -63,4 +63,7 @@ lambda/scheduler-lambda-policy.json
 node_modules/
 .wrangler/
 .dev.vars
-wrangler.toml.backup 
+wrangler.toml.backup
+
+# Setup documentation
+docs/setup/
