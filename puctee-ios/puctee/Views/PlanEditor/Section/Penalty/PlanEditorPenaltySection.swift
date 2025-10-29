@@ -61,7 +61,7 @@ struct PlanEditorPenaltySection: View {
               .font(.subheadline.weight(.semibold))
             Spacer()
           }
-          .foregroundStyle(.black)
+          .foregroundStyle(.primary)
           .padding(.horizontal)
           .frame(height: 44)
           .background(.thinMaterial)

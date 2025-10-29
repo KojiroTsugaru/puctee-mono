@@ -51,21 +51,18 @@ struct HomeSideBarMenu: View {
           FriendSearchView()
         } label: {
           Label("Find Users", systemImage: "magnifyingglass")
-            .foregroundStyle(colorScheme == .dark ? .white : .black)
         }
         
         NavigationLink {
           UserProfileView(userProfileType: .me)
         } label: {
           Label("My Page", systemImage: "person")
-            .foregroundStyle(colorScheme == .dark ? .white : .black)
         }
         
         NavigationLink {
           SettingView()
         } label: {
           Label("Settings", systemImage: "gear")
-            .foregroundStyle(colorScheme == .dark ? .white : .black)
         }
         
         Spacer()

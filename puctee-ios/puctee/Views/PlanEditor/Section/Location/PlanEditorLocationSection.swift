@@ -31,7 +31,7 @@ struct PlanEditorLocationSection: View {
             Image(systemName: "plus.circle")
             Text("Tap to specify location from map")
               .font(.caption)
-          }.foregroundStyle(.black.opacity(0.8))
+          }.foregroundStyle(.primary.opacity(0.8))
         }
       }.clipShape(RoundedRectangle(cornerRadius: 12))
         .frame(height: 80)

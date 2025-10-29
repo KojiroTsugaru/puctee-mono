@@ -30,7 +30,7 @@ struct PlanEditorParticipantsSection: View {
               .frame(width: 32, height: 32)
               .clipped()
               .clipShape(Circle())
-              .overlay(Circle().stroke(.white, lineWidth: 1))
+              .overlay(Circle().stroke(Color(.systemGray4), lineWidth: 1))
           }
           // Show extra count
           .navigationDestination(isPresented: $showParticipantSearch) {
@@ -41,7 +41,7 @@ struct PlanEditorParticipantsSection: View {
             .foregroundColor(.accentColor)
             .frame(width: 32, height: 32)
             .background(Circle().fill(Color.secondary.opacity(0.1)))
-            .overlay(Circle().stroke(Color.white, lineWidth: 1))
+            .overlay(Circle().stroke(Color(.systemGray4), lineWidth: 1))
             .onTapGesture {
               showParticipantSearch.toggle()
             }

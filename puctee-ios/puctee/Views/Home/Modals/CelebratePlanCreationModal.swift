@@ -93,7 +93,7 @@ struct CelebratePlanCreationModal: View {
       }
       .padding()
       .frame(height: UIScreen.main.bounds.height * 0.4)
-      .background(.white)
+      .background(Color(.systemBackground))
       .cornerRadius(20)
       .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
       .padding(.horizontal, 24)
