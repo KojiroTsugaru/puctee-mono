@@ -27,14 +27,14 @@ struct PlanEditorDateSection: View {
       HStack(spacing: 12) {
         Button { setToday() } label: {
           Text("Today")
-            .foregroundStyle(isToday ? .accent : .black)
+            .foregroundStyle(isToday ? .accent : .primary)
             .padding(.vertical, 8).padding(.horizontal, 12)
             .background(isToday ? Color.accentColor.opacity(0.2) : Color.gray.opacity(0.1))
             .cornerRadius(8)
         }
         Button { setTomorrow() } label: {
           Text("Tomorrow")
-            .foregroundStyle(isTomorrow ? .blue : .black)
+            .foregroundStyle(isTomorrow ? Color.blue : .primary)
             .padding(.vertical, 8).padding(.horizontal, 12)
             .background(isTomorrow ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
             .cornerRadius(8)
@@ -57,7 +57,7 @@ struct PlanEditorDateSection: View {
   var datePickerToggle: some View {
     HStack {
       Text(DateFormatter.localizedString(from: vm.startTime, dateStyle: .medium, timeStyle: .none))
-        .foregroundStyle(isToday || isTomorrow ? .black : .blue)
+        .foregroundStyle(isToday || isTomorrow ? .primary : Color.blue)
       Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
         .animation(.none, value: showDatePicker)
     }

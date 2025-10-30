@@ -31,7 +31,7 @@ struct FriendInviteListCell: View {
               .frame(width: 40, height: 40)
               .clipped()
               .clipShape(Circle())
-              .overlay(Circle().stroke(.white, lineWidth: 1))
+              .overlay(Circle().stroke(Color(.systemGray4), lineWidth: 1))
             
             VStack(alignment: .leading, spacing: 2) {
               Text(user.displayName)
@@ -78,7 +78,7 @@ struct FriendInviteListCell: View {
           }
           .padding(.vertical, 4)
           .padding(.horizontal)
-          .foregroundStyle(.black)
+          .foregroundStyle(.primary)
         }
         
       } else {

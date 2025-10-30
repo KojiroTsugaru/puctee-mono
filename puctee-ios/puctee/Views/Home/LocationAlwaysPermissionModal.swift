@@ -88,7 +88,7 @@ struct LocationAlwaysPermissionModal: View {
               Image(systemName: "arrow.right")
                 .font(.system(size: 14, weight: .semibold))
             }
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(

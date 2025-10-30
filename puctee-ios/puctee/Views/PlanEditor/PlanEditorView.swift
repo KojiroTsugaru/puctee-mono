@@ -46,7 +46,7 @@ struct PlanEditorView: View {
         }
         .padding(.horizontal)
       }
-      .background(Color(.white).ignoresSafeArea())
+      .background(Color(.systemBackground).ignoresSafeArea())
       .navigationBarHidden(true)
       .navigationDestination(isPresented: $showCoordinatePicker) {
         PlanEditorLocationPicker(coordinates: $vm.selectedCoordinates)
