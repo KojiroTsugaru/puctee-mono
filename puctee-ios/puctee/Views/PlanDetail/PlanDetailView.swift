@@ -71,7 +71,7 @@ struct PlanDetailView: View {
           ReportContentSheet(
             contentType: .plan,
             contentId: planData.id,
-            reportedUserId: planData.createdBy
+            reportedUserId: nil
           )
         }
       }
