@@ -42,6 +42,43 @@ struct PlanDetailView: View {
   }
   
   var body: some View {
+    contentView
+      .navigationTitle(loadedPlan?.title ?? plan?.title ?? "Plan Details")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar { toolbarContent }
+      .alert(
+        "Delete this plan?",
+        isPresented: $isPresentingDeleteConfirmation
+      ) {
+        Button("Delete", role: .destructive) {
+          Task { await deletePlan() }
+        }
+        Button("Cancel", role: .cancel) { }
+      } message: {
+        Text("Once deleted, it cannot be recovered.")
+      }
+      .fullScreenCover(isPresented: $isPresentingEdit) {
+        if let planData = loadedPlan {
+          PlanEditorView(plan: planData)
+        }
+      }
+      .sheet(isPresented: $showPenaltyApprovalSheet) {
+        PlanPenaltyApprovalRequestView(plan: plan, isPresented: $showPenaltyApprovalSheet)
+          .interactiveDismissDisabled()
+      }
+      .sheet(isPresented: $showReportSheet) {
+        if let planData = plan ?? loadedPlan {
+          ReportContentSheet(
+            contentType: .plan,
+            contentId: planData.id,
+            reportedUserId: planData.createdBy
+          )
+        }
+      }
+  }
+  
+  @ViewBuilder
+  private var contentView: some View {
     Group {
       if let planData = loadedPlan {
         detailContent(for: planData)
@@ -51,86 +88,65 @@ struct PlanDetailView: View {
             self.penaltyStatus = await planManager.fetchCurrentUserPenaltyStatus(planId: planData.id)
           }
       } else if isLoading {
-        VStack {
-          ProgressView("Loading...")
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        loadingView
       } else if let err = loadError {
-        VStack(spacing: 16) {
-          Text("Failed to load")
-            .foregroundColor(.red)
-          Text(err)
-            .font(.caption)
-            .foregroundColor(.secondary)
-          Button("Reload") {
-            Task { await loadPlan() }
-          }
-        }
-        .padding()
+        errorView(error: err)
       } else {
         Color.clear
           .task { await loadPlan() }
       }
     }
-    .navigationTitle(loadedPlan?.title ?? plan?.title ?? "Plan Details")
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      if (plan ?? loadedPlan) != nil {
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
+  }
+  
+  @ToolbarContentBuilder
+  private var toolbarContent: some ToolbarContent {
+    if (plan ?? loadedPlan) != nil {
+      ToolbarItemGroup(placement: .navigationBarTrailing) {
+        Button {
+          // share action
+        } label: {
+          Image(systemName: "square.and.arrow.up")
+        }
+        Menu {
           Button {
-            // share action
+            isPresentingEdit = true
           } label: {
-            Image(systemName: "square.and.arrow.up")
+            Label("Edit", systemImage: "pencil")
           }
-          Menu {
-            Button {
-              isPresentingEdit = true
-            } label: {
-              Label("Edit", systemImage: "pencil")
-            }
-            Button {
-              showReportSheet = true
-            } label: {
-              Label("Report Plan", systemImage: "exclamationmark.bubble")
-            }
-            Button("Delete", role: .destructive) {
-              isPresentingDeleteConfirmation = true
-            }
+          Button {
+            showReportSheet = true
           } label: {
-            Image(systemName: "ellipsis")
+            Label("Report Plan", systemImage: "exclamationmark.bubble")
           }
+          Button("Delete", role: .destructive) {
+            isPresentingDeleteConfirmation = true
+          }
+        } label: {
+          Image(systemName: "ellipsis")
         }
       }
     }
-    .alert(
-      "Delete this plan?",
-      isPresented: $isPresentingDeleteConfirmation
-    ) {
-      Button("Delete", role: .destructive) {
-        Task { await deletePlan() }
-      }
-      Button("Cancel", role: .cancel) { }
-    } message: {
-      Text("Once deleted, it cannot be recovered.")
+  }
+  
+  private var loadingView: some View {
+    VStack {
+      ProgressView("Loading...")
     }
-    .fullScreenCover(isPresented: $isPresentingEdit) {
-      if let planData = loadedPlan {
-        PlanEditorView(plan: planData)
-      }
-    }
-    .sheet(isPresented: $showPenaltyApprovalSheet) {
-      PlanPenaltyApprovalRequestView(plan: plan, isPresented: $showPenaltyApprovalSheet)
-        .interactiveDismissDisabled()
-    }
-    .sheet(isPresented: $showReportSheet) {
-      if let planData = plan ?? loadedPlan {
-        ReportContentSheet(
-          contentType: .plan,
-          contentId: planData.id,
-          reportedUserId: planData.createdBy
-        )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+  
+  private func errorView(error: String) -> some View {
+    VStack(spacing: 16) {
+      Text("Failed to load")
+        .foregroundColor(.red)
+      Text(error)
+        .font(.caption)
+        .foregroundColor(.secondary)
+      Button("Reload") {
+        Task { await loadPlan() }
       }
     }
+    .padding()
   }
   
   @ViewBuilder
