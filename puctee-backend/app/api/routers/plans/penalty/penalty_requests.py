@@ -14,6 +14,7 @@ from app.schemas import (
 )
 from app.services.push_notification import send_penalty_approval_request_notification
 from app.core.s3 import upload_proof_image_to_s3
+from app.core.content_filter import filter_user_input
 from datetime import datetime, timezone
 import base64
 
@@ -87,6 +88,21 @@ async def send_penalty_approval_request(
             detail="There is already a pending approval request for this user"
         )
     
+    # Validate comment content if provided
+    filtered_comment = request_data.comment
+    if request_data.comment:
+        is_valid, filtered_text, error_msg = filter_user_input(
+            request_data.comment,
+            max_length=500,
+            allow_profanity=False
+        )
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_msg
+            )
+        filtered_comment = filtered_text
+    
     # Update penalty status to pendingApproval
     stmt = (
         update(plan_participants)
@@ -102,7 +118,7 @@ async def send_penalty_approval_request(
     approval_request = PenaltyApprovalRequest(
         plan_id=plan_id,
         penalty_user_id=requesting_user.id,
-        comment=request_data.comment,
+        comment=filtered_comment,
         proof_image_url=None  # Will be set after S3 upload if image data provided
     )
     db.add(approval_request)
