@@ -22,6 +22,7 @@ struct PlanDetailView: View {
   @State private var penaltyApprovals: [PenaltyApprovalRequestResponse]?
   
   @State private var isPresentingEdit = false
+  @State private var showReportSheet = false
   @Environment(\.planManager) private var planManager
   @Environment(\.dismiss) private var dismiss
   
@@ -87,6 +88,11 @@ struct PlanDetailView: View {
             } label: {
               Label("Edit", systemImage: "pencil")
             }
+            Button {
+              showReportSheet = true
+            } label: {
+              Label("Report Plan", systemImage: "exclamationmark.bubble")
+            }
             Button("Delete", role: .destructive) {
               isPresentingDeleteConfirmation = true
             }
@@ -115,6 +121,15 @@ struct PlanDetailView: View {
     .sheet(isPresented: $showPenaltyApprovalSheet) {
       PlanPenaltyApprovalRequestView(plan: plan, isPresented: $showPenaltyApprovalSheet)
         .interactiveDismissDisabled()
+    }
+    .sheet(isPresented: $showReportSheet) {
+      if let planData = plan ?? loadedPlan {
+        ReportContentSheet(
+          contentType: .plan,
+          contentId: planData.id,
+          reportedUserId: planData.createdBy
+        )
+      }
     }
   }
   
