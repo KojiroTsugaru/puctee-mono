@@ -19,6 +19,7 @@ struct PlanPenaltyApprovalView: View {
   @State private var resultMessage = ""
   @State private var showErrorAlert = false
   @State private var errorMessage: String = ""
+  @State private var showReportSheet = false
   
   var body: some View {
     VStack(alignment: .leading, spacing: 20) {
@@ -29,6 +30,15 @@ struct PlanPenaltyApprovalView: View {
             .foregroundStyle(.gray)
         }
         Spacer()
+        
+        // Report button
+        Button {
+          showReportSheet = true
+        } label: {
+          Image(systemName: "exclamationmark.bubble")
+            .font(.system(size: 20))
+            .foregroundStyle(.red)
+        }
       }
       
       // Title
@@ -116,6 +126,15 @@ struct PlanPenaltyApprovalView: View {
     }
     .task {
       await configure()
+    }
+    .sheet(isPresented: $showReportSheet) {
+      if let penaltyUserId = request?.penaltyUserId {
+        ReportContentSheet(
+          contentType: .penaltyRequest,
+          contentId: approvalRequestId,
+          reportedUserId: penaltyUserId
+        )
+      }
     }
     .background(Color.white)
   }
