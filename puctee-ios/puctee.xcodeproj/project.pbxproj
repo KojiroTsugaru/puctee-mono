@@ -19,6 +19,11 @@
 		2B0C2FEB2E5806330085D002 /* ModalCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0C2FEA2E58062E0085D002 /* ModalCoordinator.swift */; };
 		2B0C2FED2E5806510085D002 /* GlobalModalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0C2FEC2E5806440085D002 /* GlobalModalHost.swift */; };
 		2B14C1D02EA75D3B00564393 /* LocationAlwaysPermissionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1CF2EA75D3B00564393 /* LocationAlwaysPermissionModal.swift */; };
+		2B14C1D92EBB042900564393 /* UserActionMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1D72EBB042900564393 /* UserActionMenu.swift */; };
+		2B14C1DA2EBB042900564393 /* ReportContentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1D62EBB042900564393 /* ReportContentSheet.swift */; };
+		2B14C1DD2EBB043D00564393 /* ContentReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1DC2EBB043D00564393 /* ContentReport.swift */; };
+		2B14C1DE2EBB043D00564393 /* BlockedUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1DB2EBB043D00564393 /* BlockedUser.swift */; };
+		2B14C1E12EBB045A00564393 /* ModerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B14C1DF2EBB045A00564393 /* ModerationService.swift */; };
 		2B16B0B52DCC9364003AC5F7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B16B0B02DCC9364003AC5F7 /* Assets.xcassets */; };
 		2B16B0B62DCC9364003AC5F7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B16B0B12DCC9364003AC5F7 /* RootView.swift */; };
 		2B16B0B72DCC9364003AC5F7 /* pucteeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B16B0B32DCC9364003AC5F7 /* pucteeApp.swift */; };
@@ -156,6 +161,11 @@
 		2B0C2FEA2E58062E0085D002 /* ModalCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalCoordinator.swift; sourceTree = "<group>"; };
 		2B0C2FEC2E5806440085D002 /* GlobalModalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalModalHost.swift; sourceTree = "<group>"; };
 		2B14C1CF2EA75D3B00564393 /* LocationAlwaysPermissionModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationAlwaysPermissionModal.swift; sourceTree = "<group>"; };
+		2B14C1D62EBB042900564393 /* ReportContentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportContentSheet.swift; sourceTree = "<group>"; };
+		2B14C1D72EBB042900564393 /* UserActionMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserActionMenu.swift; sourceTree = "<group>"; };
+		2B14C1DB2EBB043D00564393 /* BlockedUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedUser.swift; sourceTree = "<group>"; };
+		2B14C1DC2EBB043D00564393 /* ContentReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentReport.swift; sourceTree = "<group>"; };
+		2B14C1DF2EBB045A00564393 /* ModerationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationService.swift; sourceTree = "<group>"; };
 		2B16B0852DCC933D003AC5F7 /* puctee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = puctee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B16B0932DCC933E003AC5F7 /* pucteeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pucteeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B16B09D2DCC933E003AC5F7 /* pucteeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pucteeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -324,6 +334,23 @@
 			path = Modals;
 			sourceTree = "<group>";
 		};
+		2B14C1D82EBB042900564393 /* Moderation */ = {
+			isa = PBXGroup;
+			children = (
+				2B14C1D62EBB042900564393 /* ReportContentSheet.swift */,
+				2B14C1D72EBB042900564393 /* UserActionMenu.swift */,
+			);
+			path = Moderation;
+			sourceTree = "<group>";
+		};
+		2B14C1E02EBB045A00564393 /* Moderation */ = {
+			isa = PBXGroup;
+			children = (
+				2B14C1DF2EBB045A00564393 /* ModerationService.swift */,
+			);
+			path = Moderation;
+			sourceTree = "<group>";
+		};
 		2B16B07C2DCC933D003AC5F7 = {
 			isa = PBXGroup;
 			children = (
@@ -381,6 +408,7 @@
 		2B16B0C02DCC97CC003AC5F7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2B14C1D82EBB042900564393 /* Moderation */,
 				2B0C2FE72E5806140085D002 /* Modals */,
 				2B16B0C32DCC9815003AC5F7 /* Auth */,
 				2BB2F0702DCDF37C00E50585 /* Home */,
@@ -409,6 +437,8 @@
 		2B16B0C22DCC97E7003AC5F7 /* Entities */ = {
 			isa = PBXGroup;
 			children = (
+				2B14C1DB2EBB043D00564393 /* BlockedUser.swift */,
+				2B14C1DC2EBB043D00564393 /* ContentReport.swift */,
 				2BB2F0602DCCA89D00E50585 /* User.swift */,
 				2BB2F0822DCDF64F00E50585 /* Plan.swift */,
 				2B1B6CAC2DD8B7E9008E530A /* PlanInvite.swift */,
@@ -593,6 +623,7 @@
 		2BB2F0592DCCA69200E50585 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				2B14C1E02EBB045A00564393 /* Moderation */,
 				2BB2F0D62DD3264100E50585 /* APIClient */,
 				2BB2F0B82DD19D8E00E50585 /* Auth */,
 				2BB2F0E02DD4EE1E00E50585 /* Plans */,
@@ -1016,6 +1047,10 @@
 				2B0C2FDC2E5422EE0085D002 /* LocationManager.swift in Sources */,
 				2BB2F0722DCDF3D300E50585 /* HomeView.swift in Sources */,
 				2BA80D7E2E3AC99F00D319FE /* APIResponseError.swift in Sources */,
+				2B14C1DD2EBB043D00564393 /* ContentReport.swift in Sources */,
+				2B14C1DE2EBB043D00564393 /* BlockedUser.swift in Sources */,
+				2B14C1D92EBB042900564393 /* UserActionMenu.swift in Sources */,
+				2B14C1DA2EBB042900564393 /* ReportContentSheet.swift in Sources */,
 				2B6C8A672E154E9C005E359D /* ParticipantsMapSheetContent.swift in Sources */,
 				2BB2F0D52DD325F400E50585 /* APIClient.swift in Sources */,
 				2B1B6CA92DD769ED008E530A /* FriendDTO.swift in Sources */,
@@ -1066,6 +1101,7 @@
 				2B1B6CA72DD76907008E530A /* FriendService.swift in Sources */,
 				2BA80D7C2E39E6CA00D319FE /* FriendInviteListCell.swift in Sources */,
 				2BD1E0E12DDCD03100FBA4EE /* ParticipantSearchBar.swift in Sources */,
+				2B14C1E12EBB045A00564393 /* ModerationService.swift in Sources */,
 				2BB2F0D82DD33C1700E50585 /* JWT.swift in Sources */,
 				2BB2F05D2DCCA6CB00E50585 /* AuthService.swift in Sources */,
 				2B38528B2E5ECFBA00D5C57F /* PenaltyApprovalModal.swift in Sources */,
