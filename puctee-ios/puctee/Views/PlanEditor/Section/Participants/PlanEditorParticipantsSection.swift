@@ -15,7 +15,7 @@ struct PlanEditorParticipantsSection: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack(spacing: 12) {
-        Label("参加者:", systemImage: "person.2.fill")
+        Label("Participants:", systemImage: "person.2.fill")
           .foregroundStyle(.gray)
         
         HStack(spacing: -8) {
