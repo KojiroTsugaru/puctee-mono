@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import json
 
 from app.core.auth import get_current_username
+from app.core.content_filter import filter_user_input
 from app.db.session import get_db
 from app.models import User, Plan, Location, Penalty, PlanInvite
 from app.schemas import Plan as PlanSchema, PlanCreate
@@ -43,8 +44,20 @@ async def create_plan(
             logger.error(error_msg)
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=error_msg)
 
+        # Validate plan title
+        is_valid, filtered_title, error_msg = filter_user_input(
+            plan.title,
+            max_length=200,
+            allow_profanity=False
+        )
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid plan title: {error_msg}"
+            )
+
         # 2) Create Plan record
-        db_plan = Plan(title=plan.title, start_time=plan.start_time)
+        db_plan = Plan(title=filtered_title, start_time=plan.start_time)
         db_plan.participants.append(user)
         db.add(db_plan)
         await db.flush()
@@ -81,12 +94,24 @@ async def create_plan(
 
             if plan.penalty:
                 pen = plan.penalty
+                # Validate penalty content
+                is_valid, filtered_penalty, error_msg = filter_user_input(
+                    pen.content,
+                    max_length=500,
+                    allow_profanity=False
+                )
+                if not is_valid:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Invalid penalty content: {error_msg}"
+                    )
+                
                 db.add(Penalty(
                     plan_id=db_plan.id,
                     user_id=user.id,
-                    content=pen.content,
+                    content=filtered_penalty,
                 ))
-                log_operation("penalty_added", {"content": pen.content}, user.id, db_plan.id)
+                log_operation("penalty_added", {"content": filtered_penalty}, user.id, db_plan.id)
 
             # 5) Commit
             await db.commit()

@@ -296,3 +296,46 @@ class LocationShareValidationResponse(BaseModel):
     valid: bool
     user_info: Optional[UserInfo] = None
     error: Optional[str] = None
+
+# Content Moderation Schemas
+class ContentReportCreate(BaseModel):
+    reported_user_id: Optional[int] = None
+    content_type: Literal['penalty_request', 'plan', 'user_profile']
+    content_id: Optional[int] = None
+    reason: Literal['spam', 'harassment', 'inappropriate', 'hate_speech', 'violence', 'other']
+    description: Optional[str] = None
+
+class ContentReportResponse(BaseModel):
+    id: int
+    reporter_user_id: int
+    reported_user_id: Optional[int] = None
+    content_type: str
+    content_id: Optional[int] = None
+    reason: str
+    description: Optional[str] = None
+    status: str
+    created_at: datetime
+    reviewed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class BlockUserCreate(BaseModel):
+    blocked_user_id: int
+    reason: Optional[str] = None
+
+class BlockedUserResponse(BaseModel):
+    id: int
+    blocker_user_id: int
+    blocked_user_id: int
+    reason: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class BlockedUserListResponse(BaseModel):
+    blocked_users: List[UserResponse]
+
+    class Config:
+        from_attributes = True

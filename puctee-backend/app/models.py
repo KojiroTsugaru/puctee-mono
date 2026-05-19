@@ -169,3 +169,36 @@ class Notification(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="notifications")
+
+class ContentReport(Base):
+    __tablename__ = "content_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    reporter_user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    reported_user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
+    content_type = Column(String, nullable=False)  # 'penalty_request', 'plan', 'user_profile'
+    content_id = Column(Integer, nullable=True)  # ID of the reported content
+    reason = Column(String, nullable=False)  # 'spam', 'harassment', 'inappropriate', 'other'
+    description = Column(Text, nullable=True)  # Additional details from reporter
+    status = Column(String, default='pending')  # 'pending', 'reviewed', 'actioned', 'dismissed'
+    admin_notes = Column(Text, nullable=True)  # Internal notes from moderators
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    reporter = relationship("User", foreign_keys=[reporter_user_id])
+    reported_user = relationship("User", foreign_keys=[reported_user_id])
+
+class BlockedUser(Base):
+    __tablename__ = "blocked_users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    blocker_user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    blocked_user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    reason = Column(String, nullable=True)  # Optional reason for blocking
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    blocker = relationship("User", foreign_keys=[blocker_user_id])
+    blocked = relationship("User", foreign_keys=[blocked_user_id])
