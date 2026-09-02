@@ -137,8 +137,13 @@ Edit `.env`:
 ```env
 DATABASE_URL="postgresql://postgres:password@localhost:5432/puctee"
 SECRET_KEY="your_secret_key_here"
+APNS_AUTH_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
 # ... other variables
 ```
+
+`APNS_AUTH_KEY` replaces the former AWS Secrets Manager configuration. Set it
+to the full contents of your Apple `.p8` key. If your hosting provider only
+accepts single-line values, encode line breaks as literal `\n` sequences.
 
 #### 3. Run Database Migrations
 

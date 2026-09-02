@@ -1,7 +1,6 @@
 import os
 import logging
 import ssl
-import boto3
 import tempfile
 from aioapns import APNs, NotificationRequest, PushType
 from app.core.config import settings
@@ -11,22 +10,25 @@ logger = logging.getLogger(__name__)
 class notificationClient:
     def __init__(self):
         self.client = None
-        self._initialize_client()
+        self._key_path = None
+
+    def _materialize_key_file(self) -> str:
+        if not settings.APNS_AUTH_KEY.strip():
+            raise RuntimeError(
+                "APNS_AUTH_KEY is not configured. Set it to the contents of the Apple .p8 key."
+            )
+
+        # Restore real newlines if the env var was stored with literal "\n" escapes.
+        key_pem = settings.APNS_AUTH_KEY.replace("\\n", "\n")
+        with tempfile.NamedTemporaryFile(suffix=".p8", delete=False) as tf:
+            tf.write(key_pem.encode())
+            return tf.name
 
     def _initialize_client(self):
         try:
-            # Get authentication key from AWS Secrets Manager
-            sm = boto3.client(
-                "secretsmanager",
-                region_name=settings.AWS_REGION
-            )
-            resp = sm.get_secret_value(SecretId=settings.APNS_SECRET_ARN)
-            key_pem = resp["SecretString"]
-            
-            # Temporarily write to Lambda's /tmp directory
-            with tempfile.NamedTemporaryFile(dir="/tmp", suffix=".p8", delete=False) as tf:
-                tf.write(key_pem.encode())
-                key_path = tf.name
+            if not self._key_path or not os.path.exists(self._key_path):
+                self._key_path = self._materialize_key_file()
+            key_path = self._key_path
 
             # SSL context configuration
             ssl_context = ssl.create_default_context()
