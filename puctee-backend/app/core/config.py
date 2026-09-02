@@ -24,7 +24,12 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str = ""
 
     # APNs settings
-    APNS_SECRET_ARN: str 
+    # APNS_AUTH_KEY: full contents of the .p8 auth key (PEM). Provided via env var.
+    # If the value contains literal "\n" sequences (common when pasting into single-line env editors),
+    # they are converted back to real newlines at use time.
+    # Keep this optional so missing push-notification configuration does not
+    # prevent the rest of the API from starting.
+    APNS_AUTH_KEY: str = ""
     APNS_AUTH_KEY_ID: str
     APNS_TEAM_ID: str
     APNS_BUNDLE_ID: str
@@ -48,4 +53,4 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-settings = Settings() 
+settings = Settings()
