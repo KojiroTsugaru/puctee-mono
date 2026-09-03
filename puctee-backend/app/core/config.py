@@ -9,19 +9,25 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = "HS256"
 
-    # AWS Settings (for S3 - can migrate to R2 later)
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
+    # AWS region is currently used only by the legacy EventBridge scheduler.
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "ap-northeast-1"
-    AWS_S3_BUCKET: str
     
     # Redis (use Upstash Redis or Railway Redis)
     # Optional if using Supabase Realtime
     REDIS_URL: str = ""
 
-    # Supabase (for Realtime/WebSocket)
+    # Supabase (Realtime and Storage)
     SUPABASE_URL: str = ""
     SUPABASE_ANON_KEY: str = ""
+    SUPABASE_PUBLISHABLE_KEY: str = ""
+    SUPABASE_SECRET_KEY: str = ""
+    # Keep this server-only. Never expose the service-role key to the iOS app.
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_JWKS_URL: str = ""
+    # This bucket must be public because image URLs are stored and served directly.
+    SUPABASE_STORAGE_BUCKET: str = "images"
 
     # APNs settings
     # APNS_AUTH_KEY: full contents of the .p8 auth key (PEM). Provided via env var.
@@ -52,5 +58,8 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        # Deployment environments can contain platform-provided variables that
+        # are unrelated to this service. They should not prevent startup.
+        extra = "ignore"
 
 settings = Settings()

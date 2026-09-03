@@ -13,7 +13,7 @@ from app.schemas import (
     PenaltyApprovalStatus
 )
 from app.services.push_notification import send_penalty_approval_request_notification
-from app.core.s3 import upload_proof_image_to_s3
+from app.core.storage import upload_proof_image
 from app.core.content_filter import filter_user_input
 from datetime import datetime, timezone
 import base64
@@ -119,13 +119,13 @@ async def send_penalty_approval_request(
         plan_id=plan_id,
         penalty_user_id=requesting_user.id,
         comment=filtered_comment,
-        proof_image_url=None  # Will be set after S3 upload if image data provided
+        proof_image_url=None  # Set after the image is uploaded, if provided
     )
     db.add(approval_request)
     await db.commit()
     await db.refresh(approval_request)
     
-    # Handle proof image data upload to S3 if provided
+    # Handle proof image upload if provided
     if request_data.proof_image_data:
         try:
             # Decode base64 image data if it's base64 encoded
@@ -134,14 +134,13 @@ async def send_penalty_approval_request(
             else:
                 image_data = request_data.proof_image_data
             
-            # Upload to S3
-            proof_image_url = await upload_proof_image_to_s3(
+            proof_image_url = await upload_proof_image(
                 image_data=image_data,
                 user_id=requesting_user.id,
                 request_id=approval_request.id
             )
             
-            # Update approval request with S3 URL
+            # Update approval request with its public storage URL
             approval_request.proof_image_url = proof_image_url
             await db.commit()
             await db.refresh(approval_request)
@@ -253,7 +252,7 @@ async def send_penalty_approval_request_solo(
         plan_id=plan_id,
         penalty_user_id=requesting_user.id,
         comment=request_data.comment,
-        proof_image_url=None  # Will be set after S3 upload if image data provided
+        proof_image_url=None  # Set after the image is uploaded, if provided
     )
     
     # If only 1 participant, auto-approve immediately
@@ -292,7 +291,7 @@ async def send_penalty_approval_request_solo(
     await db.commit()
     await db.refresh(approval_request)
     
-    # Handle proof image data upload to S3 if provided
+    # Handle proof image upload if provided
     if request_data.proof_image_data:
         try:
             # Decode base64 image data if it's base64 encoded
@@ -301,14 +300,13 @@ async def send_penalty_approval_request_solo(
             else:
                 image_data = request_data.proof_image_data
             
-            # Upload to S3
-            proof_image_url = await upload_proof_image_to_s3(
+            proof_image_url = await upload_proof_image(
                 image_data=image_data,
                 user_id=requesting_user.id,
                 request_id=approval_request.id
             )
             
-            # Update approval request with S3 URL
+            # Update approval request with its public storage URL
             approval_request.proof_image_url = proof_image_url
             await db.commit()
             await db.refresh(approval_request)
