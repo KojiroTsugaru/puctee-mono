@@ -17,6 +17,9 @@ struct HomeHeader: View {
   var body: some View {
     HStack {
       KFImage(accountManager.currentUser?.profileImageUrl)
+        .onFailure { error in
+          print("⚠️ failed to load profile image:", error)
+        }
         .placeholder {
           PlaceholderInitial()
             .frame(width: 30, height: 30)

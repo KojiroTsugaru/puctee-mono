@@ -31,6 +31,9 @@ struct HomeSideBarProfileIconPicker: View {
               .resizable()
           } else {
             KFImage(accountManager.currentUser?.profileImageUrl)
+              .onFailure { error in
+                print("⚠️ failed to load profile image:", error)
+              }
               .placeholder {
                 PlaceholderInitial()
                   .frame(width: 120, height: 120)

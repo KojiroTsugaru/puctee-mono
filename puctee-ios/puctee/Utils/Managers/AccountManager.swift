@@ -84,20 +84,29 @@ import Kingfisher
   
   /// upload profile image and get the url to the resource on S3
   func uploadProfileImage(imageData: Data?) async throws {
-    // remove cache of current profile image path
+    guard let imageData else { return }
+
+    // Cache cleanup is best-effort. Kingfisher can retain a cache key after the
+    // corresponding file has already been evicted from disk.
     if let urlString = self.currentUser?.profileImageUrl?.absoluteString {
-      try await ImageCache.default.removeImage(forKey: urlString)
+      try? await ImageCache.default.removeImage(forKey: urlString)
     }
     
     // make a request to update image
-    let response = try await UserService.shared.uploadProfileImage(imageData: imageData!)
+    let response = try await UserService.shared.uploadProfileImage(imageData: imageData)
     
     // add cacheBuster to fource refresh KFImage on all screens
     let cacheBuster = "?v=\(Int(Date().timeIntervalSince1970))"
     let bustedUrlString = response.url.absoluteString + cacheBuster
     guard let bustedUrl = URL(string: bustedUrlString) else { return }
     
-    await MainActor.run { self.currentUser?.profileImageUrl = bustedUrl }
+    await MainActor.run {
+      guard var user = self.currentUser else { return }
+      user.profileImageUrl = bustedUrl
+      // Replace the value so Observation invalidates every view reading
+      // currentUser, rather than relying on a nested optional mutation.
+      self.currentUser = user
+    }
   }
   /// Called when the app starts or when ContentView appears.
   /// If the token is within its validity period, fetch the currentUser and set isAuthenticated = true without requiring a re-login.
