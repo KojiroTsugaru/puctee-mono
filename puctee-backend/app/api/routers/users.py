@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, and_
 from datetime import timedelta
-from botocore.exceptions import ClientError
 import logging
 from typing import List
 from sqlalchemy.orm import selectinload
@@ -20,7 +19,7 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models import User, UserTrustStats
 from app.schemas import ProfileImageResponse, User as UserSchema, UserCreate, Token, UserUpdate, UserResponse, UserTrustStatsResponse
-from app.core.s3 import upload_to_s3
+from app.core.storage import upload_profile_image as store_profile_image
 from app.services.push_notification.notificationClient import notificationClient
 
 router = APIRouter()
@@ -300,8 +299,7 @@ async def upload_profile_image(
         )
     
     try:
-        # Upload to S3
-        image_url = await upload_to_s3(file, user.id)
+        image_url = await store_profile_image(file, user.id)
         
         # Update user's profile image URL
         user.profile_image_url = image_url
@@ -312,14 +310,9 @@ async def upload_profile_image(
             message="profile image uploaded successfully",
             url=image_url
         )
-    except ClientError as e:
-        # S3 side error
+    except HTTPException:
         await db.rollback()
-        logger.error("S3 upload failed", exc_info=e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Failed to upload to S3"
-        )
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Unexpected error in profile-image endpoint", exc_info=e)

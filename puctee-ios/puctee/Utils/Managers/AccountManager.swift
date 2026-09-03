@@ -82,7 +82,7 @@ import Kingfisher
     }
   }
   
-  /// upload profile image and get the url to the resource on S3
+  /// Upload a profile image and save the URL returned by the backend.
   func uploadProfileImage(imageData: Data?) async throws {
     guard let imageData else { return }
 
