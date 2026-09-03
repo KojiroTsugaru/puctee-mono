@@ -16,7 +16,7 @@ Puctee Backend is a comprehensive social planning API that helps friends coordin
 - **Notifications**: Apple Push Notification service (APNs)
 - **Server**: Railway
 - **Cache**: Supabase Realtime (or Redis if needed)
-- **Storage**: AWS S3 (can migrate to Supabase Storage)
+- **Storage**: Supabase Storage
 - **Testing**: pytest with FastAPI TestClient
 - **Documentation**: Auto-generated OpenAPI/Swagger docs
 
@@ -39,7 +39,7 @@ flowchart LR
     end
     
     subgraph Storage ["Storage"]
-        S3["AWS S3"]
+        ObjectStorage["Supabase Storage"]
     end
 
     APNs["Apple Push Notification Service"]
@@ -48,9 +48,9 @@ flowchart LR
     user -- "HTTPS / JSON" --> API
     API -- "SQL (Async)" --> Supabase
     API -- "WebSocket" --> Realtime
-    API -- "Object Operations" --> S3
+    API -- "Object Operations" --> ObjectStorage
     API -- "Read Secrets" --> Env
-    user -- "Upload/Download" --> S3
+    user -- "Download public images" --> ObjectStorage
 
     %% Notification flow
     API -- "Send Push Notification" --> APNs
@@ -67,6 +67,18 @@ flowchart LR
 - **Trust Scoring**: Gamified reliability tracking based on punctuality history
 - **Real-time Notifications**: Push notifications with APNs for invitations, updates, and reminders
 - **Complex Relationships**: Advanced SQLAlchemy patterns with eager loading optimization
+
+### Supabase Storage setup
+
+Create a public Storage bucket named `images`, then set these server environment variables:
+
+```env
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
+SUPABASE_STORAGE_BUCKET=images
+```
+
+The secret key belongs only in the backend environment. Do not add it to the iOS app or commit it to source control. A legacy `SUPABASE_SERVICE_ROLE_KEY` is also supported. Existing S3 URLs already stored in the database are not copied by this code change; migrate those objects and update their database URLs separately if they must remain available.
 
 ## 📚 API Documentation
 
